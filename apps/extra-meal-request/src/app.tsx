@@ -1,0 +1,65 @@
+import { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { Provider as JotaiProvider } from 'jotai';
+import { initialize } from '@microsoft/power-apps/app';
+
+import { LanguageProvider } from '@/lib/localization';
+import Layout from '@/pages/_layout';
+import { AdminRoute } from '@/components/admin-route';
+import { queryClient } from '@/lib/query-client';
+import { Toaster } from '@/components/ui/sonner';
+import ErrorBoundary from '@/components/system/error-boundary';
+
+import HomePage from '@/pages/index';
+import NewRequestPage from '@/pages/new-request';
+import RequestCenterPage from '@/pages/request-center';
+import VehicleRequestPage from '@/pages/vehicle-request';
+import RequestDetailPage from '@/pages/request-detail';
+import AdminMonitoringPage from '@/pages/admin-monitoring';
+import VehicleAdminPage from '@/pages/vehicle-admin';
+
+import RequesterGuidePage from '@/pages/requester-guide';
+import AdminAccessPage from '@/pages/admin-access';
+import PowerAutomateGuidePage from '@/pages/power-automate-guide';
+
+import NotFoundPage from '@/pages/not-found';
+import { MealStoreProvider } from '@/lib/meal-store';
+
+function App() {
+  useEffect(() => {
+    initialize();
+  }, []);
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ErrorBoundary resetQueryCache>
+        <JotaiProvider>
+          <LanguageProvider>
+            <MealStoreProvider>
+              <Toaster richColors />
+              <Router>
+                <Routes>
+                  <Route path="/" element={<Layout />}>
+                    <Route index element={<HomePage />} />
+                    <Route path="buat-request" element={<RequestCenterPage />} />
+                    <Route path="request-kendaraan" element={<VehicleRequestPage />} />
+                    <Route path="request-extra-meal" element={<NewRequestPage />} />
+                    <Route path="panduan-requester" element={<RequesterGuidePage />} />
+                    <Route path="request/:id" element={<RequestDetailPage />} />
+                    <Route path="admin-kendaraan" element={<AdminRoute role="vehicle"><VehicleAdminPage /></AdminRoute>} />
+                    <Route path="admin-meal" element={<AdminRoute role="meal"><AdminMonitoringPage /></AdminRoute>} />
+                    <Route path="panduan-power-automate" element={<AdminRoute role="request-admin"><PowerAutomateGuidePage /></AdminRoute>} />
+                    <Route path="kelola-admin" element={<AdminRoute role="super"><AdminAccessPage /></AdminRoute>} />
+                    <Route path="*" element={<NotFoundPage />} />
+                  </Route>
+                </Routes>
+              </Router>
+            </MealStoreProvider>
+          </LanguageProvider>
+        </JotaiProvider>
+      </ErrorBoundary>
+    </QueryClientProvider>
+  );
+}
+
+export default App;

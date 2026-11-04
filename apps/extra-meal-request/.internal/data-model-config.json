@@ -1,0 +1,5407 @@
+{
+  "id": "50d8998c-8e59-42c4-9c11-f6ca07cc439a",
+  "iterationId": "d7e36766-22a3-41bc-bb82-3eab32d5e8c5",
+  "tableMappings": [
+    {
+      "dataSourceKey": "adminacess",
+      "schemaFileName": "sharepoint/dbf444f1-6d7c-482f-bb3c-0df022feb325.Schema",
+      "dataSourceType": "SharePoint",
+      "schema": {
+        "name": "dbf444f1-6d7c-482f-bb3c-0df022feb325",
+        "title": "adminacess",
+        "x-ms-permission": "read-write",
+        "x-ms-capabilities": {
+          "sortRestrictions": {
+            "sortable": true,
+            "unsortableProperties": [
+              "{Identifier}",
+              "{IsFolder}",
+              "{Link}",
+              "{Name}",
+              "{FilenameWithExtension}",
+              "{Path}",
+              "{FullPath}",
+              "{ModerationStatus}",
+              "{ModerationComment}",
+              "{ContentType}",
+              "{HasAttachments}",
+              "{Attachments}",
+              "{VersionNumber}",
+              "{TriggerWindowStartToken}",
+              "{TriggerWindowEndToken}"
+            ]
+          },
+          "filterRestrictions": {
+            "filterable": true,
+            "nonFilterableProperties": [
+              "{Identifier}",
+              "{IsFolder}",
+              "{Link}",
+              "{Name}",
+              "{FilenameWithExtension}",
+              "{Path}",
+              "{FullPath}",
+              "{ModerationStatus}",
+              "{ModerationComment}",
+              "{ContentType}",
+              "{HasAttachments}",
+              "{Attachments}",
+              "{VersionNumber}",
+              "{TriggerWindowStartToken}",
+              "{TriggerWindowEndToken}"
+            ]
+          },
+          "isOnlyServerPagable": true,
+          "filterFunctionSupport": [
+            "and",
+            "or",
+            "eq",
+            "startswith",
+            "gt",
+            "ge",
+            "lt",
+            "le",
+            "ne"
+          ],
+          "serverPagingOptions": [
+            "top",
+            "skiptoken"
+          ],
+          "odataVersion": 3
+        },
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [],
+            "properties": {
+              "ID": {
+                "title": "ID",
+                "description": "List item id. Use this value for specifying the item to act on in other list related actions.",
+                "type": "integer",
+                "format": "int64",
+                "x-ms-keyType": "primary",
+                "x-ms-keyOrder": 1,
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq"
+                  ]
+                }
+              },
+              "Title": {
+                "title": "Title",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "maxLength": 255
+              },
+              "UserEmail#Claims": {
+                "title": "UserEmail Claims",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-visibility": "internal"
+              },
+              "UserEmail": {
+                "title": "UserEmail",
+                "type": "object",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq"
+                  ]
+                },
+                "properties": {
+                  "@odata.type": {
+                    "title": "@odata.type",
+                    "x-ms-visibility": "internal",
+                    "type": "string",
+                    "x-ms-permission": "read-write"
+                  },
+                  "Claims": {
+                    "title": "Claims",
+                    "type": "string",
+                    "x-ms-dynamic-values": {
+                      "operationId": "GetEntityValues",
+                      "parameters": {
+                        "dataset": {
+                          "parameter": "dataset"
+                        },
+                        "table": {
+                          "parameter": "table"
+                        },
+                        "id": "28a6f988-3bd8-4597-8afb-441e1e93ac3b"
+                      },
+                      "value-path": "Claims",
+                      "value-title": "DisplayName",
+                      "value-collection": "value"
+                    }
+                  },
+                  "DisplayName": {
+                    "title": "DisplayName",
+                    "type": "string",
+                    "x-ms-permission": "read-only",
+                    "x-ms-capabilities": {
+                      "x-ms-sp": {
+                        "OdataQueryName": "Title"
+                      },
+                      "filterFunctions": [
+                        "eq",
+                        "startswith"
+                      ]
+                    }
+                  },
+                  "Email": {
+                    "title": "Email",
+                    "type": "string",
+                    "format": "email",
+                    "x-ms-permission": "read-only",
+                    "x-ms-capabilities": {
+                      "x-ms-sp": {
+                        "OdataQueryName": "EMail"
+                      },
+                      "filterFunctions": [
+                        "eq",
+                        "startswith"
+                      ]
+                    }
+                  },
+                  "Picture": {
+                    "title": "Picture",
+                    "type": "string",
+                    "format": "uri",
+                    "x-ms-media-kind": "image",
+                    "x-ms-media-default-folder-path": "/sites/Aromatics/IAI",
+                    "x-ms-media-base-url": "https://ineosgroup.sharepoint.com/sites/Aromatics/IAI",
+                    "x-ms-permission": "read-only"
+                  },
+                  "Department": {
+                    "title": "Department",
+                    "type": "string",
+                    "x-ms-permission": "read-only"
+                  },
+                  "JobTitle": {
+                    "title": "JobTitle",
+                    "type": "string",
+                    "x-ms-permission": "read-only"
+                  }
+                },
+                "x-ms-displayFormat": {
+                  "titleProperty": "DisplayName",
+                  "subtitleProperty": "Email",
+                  "thumbnailProperty": "Picture"
+                }
+              },
+              "VehicleAdmin": {
+                "title": "VehicleAdmin",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "maxLength": 255
+              },
+              "MealAdmin": {
+                "title": "MealAdmin",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "maxLength": 255
+              },
+              "OData__ColorTag": {
+                "title": "Color Tag",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "maxLength": 255
+              },
+              "ComplianceAssetId": {
+                "title": "Compliance Asset Id",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "maxLength": 255
+              },
+              "Modified": {
+                "title": "Modified",
+                "description": "When this item was last changed.",
+                "type": "string",
+                "format": "date-time",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "gt",
+                    "ge",
+                    "lt",
+                    "le",
+                    "ne"
+                  ]
+                }
+              },
+              "Created": {
+                "title": "Created",
+                "description": "When this item was created.",
+                "type": "string",
+                "format": "date-time",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "gt",
+                    "ge",
+                    "lt",
+                    "le",
+                    "ne"
+                  ]
+                }
+              },
+              "Author#Claims": {
+                "title": "Created By Claims",
+                "type": "string",
+                "description": "Internal identifier for the user who created this item.",
+                "x-ms-permission": "read-only",
+                "x-ms-visibility": "internal"
+              },
+              "Author": {
+                "title": "Created By",
+                "description": "The user who created this item.",
+                "type": "object",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq"
+                  ]
+                },
+                "properties": {
+                  "@odata.type": {
+                    "title": "@odata.type",
+                    "x-ms-visibility": "internal",
+                    "type": "string",
+                    "x-ms-permission": "read-only"
+                  },
+                  "Claims": {
+                    "title": "Claims",
+                    "type": "string",
+                    "description": "Internal identifier for the user who created this item.",
+                    "x-ms-permission": "read-only",
+                    "x-ms-dynamic-values": {
+                      "operationId": "GetEntityValues",
+                      "parameters": {
+                        "dataset": {
+                          "parameter": "dataset"
+                        },
+                        "table": {
+                          "parameter": "table"
+                        },
+                        "id": "1df5e554-ec7e-46a6-901d-d85a3881cb18"
+                      },
+                      "value-path": "Claims",
+                      "value-title": "DisplayName",
+                      "value-collection": "value"
+                    }
+                  },
+                  "DisplayName": {
+                    "title": "DisplayName",
+                    "type": "string",
+                    "description": "The name of the user who created this item.",
+                    "x-ms-permission": "read-only",
+                    "x-ms-capabilities": {
+                      "x-ms-sp": {
+                        "OdataQueryName": "Title"
+                      },
+                      "filterFunctions": [
+                        "eq",
+                        "startswith"
+                      ]
+                    }
+                  },
+                  "Email": {
+                    "title": "Email",
+                    "type": "string",
+                    "description": "Email address of the user who created this item.",
+                    "format": "email",
+                    "x-ms-permission": "read-only",
+                    "x-ms-capabilities": {
+                      "x-ms-sp": {
+                        "OdataQueryName": "EMail"
+                      },
+                      "filterFunctions": [
+                        "eq",
+                        "startswith"
+                      ]
+                    }
+                  },
+                  "Picture": {
+                    "title": "Picture",
+                    "type": "string",
+                    "description": "Link to a picture of the user who created this item.",
+                    "format": "uri",
+                    "x-ms-media-kind": "image",
+                    "x-ms-media-default-folder-path": "/sites/Aromatics/IAI",
+                    "x-ms-media-base-url": "https://ineosgroup.sharepoint.com/sites/Aromatics/IAI",
+                    "x-ms-permission": "read-only"
+                  },
+                  "Department": {
+                    "title": "Department",
+                    "type": "string",
+                    "description": "Department name of the user who created this item.",
+                    "x-ms-permission": "read-only"
+                  },
+                  "JobTitle": {
+                    "title": "JobTitle",
+                    "type": "string",
+                    "description": "Job title of the user who created this item.",
+                    "x-ms-permission": "read-only"
+                  }
+                },
+                "x-ms-displayFormat": {
+                  "titleProperty": "DisplayName",
+                  "subtitleProperty": "Email",
+                  "thumbnailProperty": "Picture"
+                }
+              },
+              "Editor#Claims": {
+                "title": "Modified By Claims",
+                "type": "string",
+                "description": "Internal identifier for the user who last changed this item.",
+                "x-ms-permission": "read-only",
+                "x-ms-visibility": "internal"
+              },
+              "Editor": {
+                "title": "Modified By",
+                "description": "The user who last changed this item.",
+                "type": "object",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq"
+                  ]
+                },
+                "properties": {
+                  "@odata.type": {
+                    "title": "@odata.type",
+                    "x-ms-visibility": "internal",
+                    "type": "string",
+                    "x-ms-permission": "read-only"
+                  },
+                  "Claims": {
+                    "title": "Claims",
+                    "type": "string",
+                    "description": "Internal identifier for the user who last changed this item.",
+                    "x-ms-permission": "read-only",
+                    "x-ms-dynamic-values": {
+                      "operationId": "GetEntityValues",
+                      "parameters": {
+                        "dataset": {
+                          "parameter": "dataset"
+                        },
+                        "table": {
+                          "parameter": "table"
+                        },
+                        "id": "d31655d1-1d5b-4511-95a1-7a09e9b75bf2"
+                      },
+                      "value-path": "Claims",
+                      "value-title": "DisplayName",
+                      "value-collection": "value"
+                    }
+                  },
+                  "DisplayName": {
+                    "title": "DisplayName",
+                    "type": "string",
+                    "description": "The name of the user who last changed this item.",
+                    "x-ms-permission": "read-only",
+                    "x-ms-capabilities": {
+                      "x-ms-sp": {
+                        "OdataQueryName": "Title"
+                      },
+                      "filterFunctions": [
+                        "eq",
+                        "startswith"
+                      ]
+                    }
+                  },
+                  "Email": {
+                    "title": "Email",
+                    "type": "string",
+                    "description": "Email address of the user who last changed this item.",
+                    "format": "email",
+                    "x-ms-permission": "read-only",
+                    "x-ms-capabilities": {
+                      "x-ms-sp": {
+                        "OdataQueryName": "EMail"
+                      },
+                      "filterFunctions": [
+                        "eq",
+                        "startswith"
+                      ]
+                    }
+                  },
+                  "Picture": {
+                    "title": "Picture",
+                    "type": "string",
+                    "description": "Link to a picture of the user who last changed this item.",
+                    "format": "uri",
+                    "x-ms-media-kind": "image",
+                    "x-ms-media-default-folder-path": "/sites/Aromatics/IAI",
+                    "x-ms-media-base-url": "https://ineosgroup.sharepoint.com/sites/Aromatics/IAI",
+                    "x-ms-permission": "read-only"
+                  },
+                  "Department": {
+                    "title": "Department",
+                    "type": "string",
+                    "description": "Department name of the user who last changed this item.",
+                    "x-ms-permission": "read-only"
+                  },
+                  "JobTitle": {
+                    "title": "JobTitle",
+                    "type": "string",
+                    "description": "Job title of the user who last changed this item.",
+                    "x-ms-permission": "read-only"
+                  }
+                },
+                "x-ms-displayFormat": {
+                  "titleProperty": "DisplayName",
+                  "subtitleProperty": "Email",
+                  "thumbnailProperty": "Picture"
+                }
+              },
+              "{Identifier}": {
+                "title": "Identifier",
+                "description": "Value that can be used in file related actions for selecting a file.",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{IsFolder}": {
+                "title": "Is folder",
+                "description": "True when the item is a folder, false otherwise.",
+                "type": "boolean",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{Link}": {
+                "title": "Link to item",
+                "description": "Link that can be used to get to the file or list item. Only people with permissions to the item will be able to open the link.",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{Name}": {
+                "title": "Name",
+                "description": "File name of the item in document libraries, display name of the item in lists.",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{FilenameWithExtension}": {
+                "title": "File name with extension",
+                "description": "For libraries, returns file name including extension. For lists, returns the title property.",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{Path}": {
+                "title": "Folder path",
+                "description": "Path to the folder the item is in, relative to the site address.",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{FullPath}": {
+                "title": "Full Path",
+                "description": "Full path of an item or a folder or a file",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{ModerationStatus}": {
+                "title": "Content approval status",
+                "description": "The content approval status. It can be one of the following: Draft, Pending, Approved, or Rejected",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{ModerationComment}": {
+                "title": "Comments associated with the content approval of this list item",
+                "description": "The comments associated with moderation of the list item.",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{ContentType}#Id": {
+                "title": "Content type Id",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-visibility": "internal"
+              },
+              "{ContentType}": {
+                "title": "Content type",
+                "description": "Name of the Content type of the item.",
+                "type": "object",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "none",
+                "properties": {
+                  "@odata.type": {
+                    "title": "@odata.type",
+                    "x-ms-visibility": "internal",
+                    "type": "string",
+                    "x-ms-permission": "read-write"
+                  },
+                  "Id": {
+                    "title": "Id",
+                    "type": "string",
+                    "x-ms-dynamic-values": {
+                      "operationId": "GetEntityValues",
+                      "parameters": {
+                        "dataset": {
+                          "parameter": "dataset"
+                        },
+                        "table": {
+                          "parameter": "table"
+                        },
+                        "id": "4651e8f2-38c9-4ad0-8def-41f743f76f30"
+                      },
+                      "value-path": "Id",
+                      "value-title": "Name",
+                      "value-collection": "value"
+                    }
+                  },
+                  "Name": {
+                    "title": "Name",
+                    "type": "string",
+                    "x-ms-permission": "read-only"
+                  }
+                },
+                "x-ms-displayFormat": {
+                  "titleProperty": "Name"
+                }
+              },
+              "{HasAttachments}": {
+                "title": "Has attachments",
+                "description": "Indicates the presence of attachments in the item.",
+                "type": "boolean",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{Attachments}@odata.type": {
+                "title": "{Attachments}",
+                "type": "string",
+                "x-ms-visibility": "internal",
+                "x-ms-permission": "read-write"
+              },
+              "{Attachments}": {
+                "title": "Attachments",
+                "description": "Never returns any data. Use Attachment endpoints to access item attachments.",
+                "x-ms-permission": "read-write",
+                "targetEntity": "attachments",
+                "format": "x-ms-containedMediaEntity",
+                "x-ms-visibility": "internal",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "format": "x-ms-mediaEntity",
+                  "x-ms-sort": "none",
+                  "properties": {
+                    "@odata.type": {
+                      "title": "@odata.type",
+                      "x-ms-visibility": "internal",
+                      "type": "string",
+                      "x-ms-permission": "read-write"
+                    },
+                    "Id": {
+                      "title": "Id",
+                      "type": "string",
+                      "x-ms-keyType": "primary",
+                      "x-ms-keyOrder": 1,
+                      "x-ms-permission": "read-only"
+                    },
+                    "AbsoluteUri": {
+                      "title": "AbsoluteUri",
+                      "type": "string",
+                      "format": "uri",
+                      "x-ms-permission": "read-only"
+                    },
+                    "DisplayName": {
+                      "title": "DisplayName",
+                      "type": "string",
+                      "x-ms-permission": "read-only"
+                    }
+                  }
+                },
+                "@odata.type": "#Collection(Microsoft.Azure.Connectors.SharePoint.SPListItemAttachment)"
+              },
+              "{VersionNumber}": {
+                "title": "Version number",
+                "description": "The version number of the file or the list item.",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{TriggerWindowStartToken}": {
+                "title": "Trigger Window Start Token",
+                "description": "A token expressing the time of the last flow check. Use this if you want to check if one or more columns were modified since the last flow check.",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{TriggerWindowEndToken}": {
+                "title": "Trigger Window End Token",
+                "description": "A token expressing the time of the current flow check. Use this if you want to check if one or more columns were modified since the last flow check.",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              }
+            },
+            "x-ms-relationships": {
+              "UserEmail": {
+                "targetEntity": "UserEmail",
+                "referentialConstraints": {
+                  "UserEmail#Claims": {
+                    "referencedProperty": "Claims"
+                  }
+                }
+              },
+              "Author": {
+                "targetEntity": "Author",
+                "referentialConstraints": {
+                  "Author#Claims": {
+                    "referencedProperty": "Claims"
+                  }
+                }
+              },
+              "Editor": {
+                "targetEntity": "Editor",
+                "referentialConstraints": {
+                  "Editor#Claims": {
+                    "referencedProperty": "Claims"
+                  }
+                }
+              },
+              "{ContentType}": {
+                "targetEntity": "4651e8f2-38c9-4ad0-8def-41f743f76f30",
+                "referentialConstraints": {
+                  "{ContentType}#Id": {
+                    "referencedProperty": "Id"
+                  }
+                }
+              }
+            },
+            "x-ms-displayFormat": {
+              "propertiesDisplayOrder": [
+                "Title",
+                "UserEmail",
+                "VehicleAdmin",
+                "MealAdmin",
+                "{Attachments}"
+              ],
+              "propertiesCompactDisplayOrder": [
+                "Title",
+                "UserEmail",
+                "VehicleAdmin",
+                "MealAdmin"
+              ],
+              "propertiesTabularDisplayOrder": [
+                "Title",
+                "UserEmail",
+                "VehicleAdmin",
+                "MealAdmin"
+              ]
+            }
+          }
+        },
+        "referencedEntities": {
+          "UserEmail": {
+            "lookupEndpoint": {
+              "path": "/tables/dbf444f1-6d7c-482f-bb3c-0df022feb325/entities/UserEmail",
+              "capabilities": {
+                "searchable": true,
+                "requiresSearch": false
+              }
+            }
+          },
+          "Author": {
+            "lookupEndpoint": {
+              "path": "/tables/dbf444f1-6d7c-482f-bb3c-0df022feb325/entities/Author",
+              "capabilities": {
+                "searchable": true,
+                "requiresSearch": false
+              }
+            }
+          },
+          "Editor": {
+            "lookupEndpoint": {
+              "path": "/tables/dbf444f1-6d7c-482f-bb3c-0df022feb325/entities/Editor",
+              "capabilities": {
+                "searchable": true,
+                "requiresSearch": false
+              }
+            }
+          },
+          "4651e8f2-38c9-4ad0-8def-41f743f76f30": {
+            "lookupEndpoint": {
+              "path": "/tables/dbf444f1-6d7c-482f-bb3c-0df022feb325/entities/%257bContentType%257d",
+              "capabilities": {
+                "searchable": true,
+                "requiresSearch": false
+              }
+            }
+          }
+        },
+        "webUrl": "https://ineosgroup.sharepoint.com/sites/Aromatics/IAI/Lists/AdminAcess/AllItems.aspx"
+      },
+      "apiMetadataTableId": "dbf444f1-6d7c-482f-bb3c-0df022feb325",
+      "apiDataTableId": "dbf444f1-6d7c-482f-bb3c-0df022feb325",
+      "powerConfigData": {
+        "connectionReferences": {
+          "400133f4-cac9-4e2d-9610-4ee57df7e0a0": {
+            "id": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+            "displayName": "SharePoint",
+            "dataSources": [
+              "adminacess"
+            ],
+            "authenticationType": null,
+            "sharedConnectionId": null,
+            "dataSets": {
+              "https%253A%252F%252Fineosgroup.sharepoint.com%252Fsites%252FAromatics%252FIAI": {
+                "dataSources": {
+                  "adminacess": {
+                    "tableName": "dbf444f1-6d7c-482f-bb3c-0df022feb325"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "typescriptModelInterfaceName": "AdminAcess",
+      "typescriptServiceClassName": "AdminAcessService",
+      "modelFileName": "admin-acess-model",
+      "serviceFileName": "admin-acess-service",
+      "hookFileName": "use-admin-acess",
+      "validatorFileName": "admin-acess-validator",
+      "columns": [
+        {
+          "displayName": "ID",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Counter"
+          },
+          "apiPropertyName": "ID",
+          "apiPropertyNameCaseSensitive": "ID",
+          "typescriptPropertyName": "id",
+          "isPrimaryName": false,
+          "isPrimaryId": true,
+          "type": "Integer",
+          "validationMetadata": {
+            "idValidationType": "string"
+          }
+        },
+        {
+          "displayName": "Title",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Text",
+            "maxLength": 255
+          },
+          "apiPropertyName": "Title",
+          "apiPropertyNameCaseSensitive": "Title",
+          "typescriptPropertyName": "title",
+          "isPrimaryName": true,
+          "isPrimaryId": false,
+          "type": "Text",
+          "validationMetadata": {
+            "maxLength": 255
+          }
+        },
+        {
+          "displayName": "MealAdmin",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Text",
+            "maxLength": 255
+          },
+          "apiPropertyName": "MealAdmin",
+          "apiPropertyNameCaseSensitive": "MealAdmin",
+          "typescriptPropertyName": "mealAdmin",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "Text",
+          "validationMetadata": {
+            "maxLength": 255
+          }
+        },
+        {
+          "displayName": "VehicleAdmin",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Text",
+            "maxLength": 255
+          },
+          "apiPropertyName": "VehicleAdmin",
+          "apiPropertyNameCaseSensitive": "VehicleAdmin",
+          "typescriptPropertyName": "vehicleAdmin",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "Text",
+          "validationMetadata": {
+            "maxLength": 255
+          }
+        }
+      ]
+    },
+    {
+      "dataSourceKey": "requestkendaraan",
+      "schemaFileName": "sharepoint/0116186b-3f6b-4431-bde5-d092cd0df898.Schema",
+      "dataSourceType": "SharePoint",
+      "schema": {
+        "name": "0116186b-3f6b-4431-bde5-d092cd0df898",
+        "title": "requestkendaraan",
+        "x-ms-permission": "read-write",
+        "x-ms-capabilities": {
+          "sortRestrictions": {
+            "sortable": true,
+            "unsortableProperties": [
+              "Keperluan",
+              "AdminNote",
+              "PlantDirectorNote",
+              "Catatan",
+              "{Identifier}",
+              "{IsFolder}",
+              "{Link}",
+              "{Name}",
+              "{FilenameWithExtension}",
+              "{Path}",
+              "{FullPath}",
+              "{ModerationStatus}",
+              "{ModerationComment}",
+              "{ContentType}",
+              "{HasAttachments}",
+              "{Attachments}",
+              "{VersionNumber}",
+              "{TriggerWindowStartToken}",
+              "{TriggerWindowEndToken}"
+            ]
+          },
+          "filterRestrictions": {
+            "filterable": true,
+            "nonFilterableProperties": [
+              "Keperluan",
+              "AdminNote",
+              "PlantDirectorNote",
+              "Catatan",
+              "{Identifier}",
+              "{IsFolder}",
+              "{Link}",
+              "{Name}",
+              "{FilenameWithExtension}",
+              "{Path}",
+              "{FullPath}",
+              "{ModerationStatus}",
+              "{ModerationComment}",
+              "{ContentType}",
+              "{HasAttachments}",
+              "{Attachments}",
+              "{VersionNumber}",
+              "{TriggerWindowStartToken}",
+              "{TriggerWindowEndToken}"
+            ]
+          },
+          "isOnlyServerPagable": true,
+          "filterFunctionSupport": [
+            "and",
+            "or",
+            "eq",
+            "startswith",
+            "gt",
+            "ge",
+            "lt",
+            "le",
+            "ne"
+          ],
+          "serverPagingOptions": [
+            "top",
+            "skiptoken"
+          ],
+          "odataVersion": 3
+        },
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [],
+            "properties": {
+              "ID": {
+                "title": "ID",
+                "description": "List item id. Use this value for specifying the item to act on in other list related actions.",
+                "type": "integer",
+                "format": "int64",
+                "x-ms-keyType": "primary",
+                "x-ms-keyOrder": 1,
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq"
+                  ]
+                }
+              },
+              "Title": {
+                "title": "Title",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "maxLength": 255
+              },
+              "NamaPemohon": {
+                "title": "NamaPemohon",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "maxLength": 255
+              },
+              "EmailPemohon": {
+                "title": "EmailPemohon",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "maxLength": 255
+              },
+              "Departemen#Id": {
+                "title": "Departemen Id",
+                "type": "integer",
+                "format": "int64",
+                "x-ms-permission": "read-only",
+                "x-ms-visibility": "internal"
+              },
+              "Departemen": {
+                "title": "Departemen",
+                "type": "object",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "x-ms-sp": {
+                    "IsChoice": true
+                  },
+                  "filterFunctions": [
+                    "eq"
+                  ]
+                },
+                "properties": {
+                  "@odata.type": {
+                    "title": "@odata.type",
+                    "x-ms-visibility": "internal",
+                    "type": "string",
+                    "x-ms-permission": "read-write"
+                  },
+                  "Value": {
+                    "title": "Value",
+                    "type": "string",
+                    "x-ms-dynamic-values": {
+                      "operationId": "GetEntityValues",
+                      "parameters": {
+                        "dataset": {
+                          "parameter": "dataset"
+                        },
+                        "table": {
+                          "parameter": "table"
+                        },
+                        "id": "5da1aa0e-117d-460e-94f5-a166b1aefbe9"
+                      },
+                      "value-path": "Value",
+                      "value-title": "Value",
+                      "value-collection": "value"
+                    }
+                  },
+                  "Id": {
+                    "title": "Id",
+                    "type": "integer",
+                    "format": "int64",
+                    "x-ms-visibility": "internal",
+                    "x-ms-permission": "read-only"
+                  }
+                },
+                "x-ms-displayFormat": {
+                  "titleProperty": "Value"
+                }
+              },
+              "Tanggal": {
+                "title": "Tanggal",
+                "type": "string",
+                "format": "date",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "gt",
+                    "ge",
+                    "lt",
+                    "le",
+                    "ne"
+                  ]
+                }
+              },
+              "Date": {
+                "title": "Jam",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "maxLength": 255
+              },
+              "Tujuan#Id": {
+                "title": "Tujuan Id",
+                "type": "integer",
+                "format": "int64",
+                "x-ms-permission": "read-only",
+                "x-ms-visibility": "internal"
+              },
+              "Tujuan": {
+                "title": "Tujuan",
+                "type": "object",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "x-ms-sp": {
+                    "IsChoice": true
+                  },
+                  "filterFunctions": [
+                    "eq"
+                  ]
+                },
+                "properties": {
+                  "@odata.type": {
+                    "title": "@odata.type",
+                    "x-ms-visibility": "internal",
+                    "type": "string",
+                    "x-ms-permission": "read-write"
+                  },
+                  "Value": {
+                    "title": "Value",
+                    "type": "string",
+                    "x-ms-dynamic-values": {
+                      "operationId": "GetEntityValues",
+                      "parameters": {
+                        "dataset": {
+                          "parameter": "dataset"
+                        },
+                        "table": {
+                          "parameter": "table"
+                        },
+                        "id": "1c46ece9-3514-4e90-a107-238c62d693b7"
+                      },
+                      "value-path": "Value",
+                      "value-title": "Value",
+                      "value-collection": "value"
+                    }
+                  },
+                  "Id": {
+                    "title": "Id",
+                    "type": "integer",
+                    "format": "int64",
+                    "x-ms-visibility": "internal",
+                    "x-ms-permission": "read-only"
+                  }
+                },
+                "x-ms-displayFormat": {
+                  "titleProperty": "Value"
+                }
+              },
+              "TujuanLainnyaDet": {
+                "title": "TujuanLainnyaDet",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "default": "N/A",
+                "maxLength": 255
+              },
+              "Keperluan": {
+                "title": "Keperluan",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "none"
+              },
+              "JumlahPenumpang": {
+                "title": "JumlahPenumpang",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "maxLength": 255
+              },
+              "TitikJemput": {
+                "title": "TitikJemput",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "maxLength": 255
+              },
+              "CurrentStatus#Id": {
+                "title": "CurrentStatus Id",
+                "type": "integer",
+                "format": "int64",
+                "x-ms-permission": "read-only",
+                "x-ms-visibility": "internal"
+              },
+              "CurrentStatus": {
+                "title": "CurrentStatus",
+                "type": "object",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "x-ms-sp": {
+                    "IsChoice": true
+                  },
+                  "filterFunctions": [
+                    "eq"
+                  ]
+                },
+                "properties": {
+                  "@odata.type": {
+                    "title": "@odata.type",
+                    "x-ms-visibility": "internal",
+                    "type": "string",
+                    "x-ms-permission": "read-write"
+                  },
+                  "Value": {
+                    "title": "Value",
+                    "type": "string",
+                    "x-ms-dynamic-values": {
+                      "operationId": "GetEntityValues",
+                      "parameters": {
+                        "dataset": {
+                          "parameter": "dataset"
+                        },
+                        "table": {
+                          "parameter": "table"
+                        },
+                        "id": "30e824e9-82ae-46eb-8914-26a25d5d974b"
+                      },
+                      "value-path": "Value",
+                      "value-title": "Value",
+                      "value-collection": "value"
+                    }
+                  },
+                  "Id": {
+                    "title": "Id",
+                    "type": "integer",
+                    "format": "int64",
+                    "x-ms-visibility": "internal",
+                    "x-ms-permission": "read-only"
+                  }
+                },
+                "x-ms-displayFormat": {
+                  "titleProperty": "Value"
+                }
+              },
+              "AdminDecision#Id": {
+                "title": "AdminDecision Id",
+                "type": "integer",
+                "format": "int64",
+                "x-ms-permission": "read-only",
+                "x-ms-visibility": "internal"
+              },
+              "AdminDecision": {
+                "title": "AdminDecision",
+                "type": "object",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "x-ms-sp": {
+                    "IsChoice": true
+                  },
+                  "filterFunctions": [
+                    "eq"
+                  ]
+                },
+                "properties": {
+                  "@odata.type": {
+                    "title": "@odata.type",
+                    "x-ms-visibility": "internal",
+                    "type": "string",
+                    "x-ms-permission": "read-write"
+                  },
+                  "Value": {
+                    "title": "Value",
+                    "type": "string",
+                    "x-ms-dynamic-values": {
+                      "operationId": "GetEntityValues",
+                      "parameters": {
+                        "dataset": {
+                          "parameter": "dataset"
+                        },
+                        "table": {
+                          "parameter": "table"
+                        },
+                        "id": "19cb98be-37c8-4848-a0af-e6d0fbeb0580"
+                      },
+                      "value-path": "Value",
+                      "value-title": "Value",
+                      "value-collection": "value"
+                    }
+                  },
+                  "Id": {
+                    "title": "Id",
+                    "type": "integer",
+                    "format": "int64",
+                    "x-ms-visibility": "internal",
+                    "x-ms-permission": "read-only"
+                  }
+                },
+                "x-ms-displayFormat": {
+                  "titleProperty": "Value"
+                }
+              },
+              "AdminNote": {
+                "title": "AdminNote",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "none"
+              },
+              "PlantDirectorDecision#Id": {
+                "title": "PlantDirectorDecision Id",
+                "type": "integer",
+                "format": "int64",
+                "x-ms-permission": "read-only",
+                "x-ms-visibility": "internal"
+              },
+              "PlantDirectorDecision": {
+                "title": "PlantDirectorDecision",
+                "type": "object",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "x-ms-sp": {
+                    "IsChoice": true
+                  },
+                  "filterFunctions": [
+                    "eq"
+                  ]
+                },
+                "properties": {
+                  "@odata.type": {
+                    "title": "@odata.type",
+                    "x-ms-visibility": "internal",
+                    "type": "string",
+                    "x-ms-permission": "read-write"
+                  },
+                  "Value": {
+                    "title": "Value",
+                    "type": "string",
+                    "x-ms-dynamic-values": {
+                      "operationId": "GetEntityValues",
+                      "parameters": {
+                        "dataset": {
+                          "parameter": "dataset"
+                        },
+                        "table": {
+                          "parameter": "table"
+                        },
+                        "id": "42b5839f-caa0-45a1-80ca-88d7fe5b7cfa"
+                      },
+                      "value-path": "Value",
+                      "value-title": "Value",
+                      "value-collection": "value"
+                    }
+                  },
+                  "Id": {
+                    "title": "Id",
+                    "type": "integer",
+                    "format": "int64",
+                    "x-ms-visibility": "internal",
+                    "x-ms-permission": "read-only"
+                  }
+                },
+                "x-ms-displayFormat": {
+                  "titleProperty": "Value"
+                }
+              },
+              "PlantDirectorNote": {
+                "title": "PlantDirectorNote",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "none"
+              },
+              "RequesterManager#Claims": {
+                "title": "RequesterManager Claims",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-visibility": "internal"
+              },
+              "RequesterManager": {
+                "title": "RequesterManager",
+                "type": "object",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq"
+                  ]
+                },
+                "properties": {
+                  "@odata.type": {
+                    "title": "@odata.type",
+                    "x-ms-visibility": "internal",
+                    "type": "string",
+                    "x-ms-permission": "read-write"
+                  },
+                  "Claims": {
+                    "title": "Claims",
+                    "type": "string",
+                    "x-ms-dynamic-values": {
+                      "operationId": "GetEntityValues",
+                      "parameters": {
+                        "dataset": {
+                          "parameter": "dataset"
+                        },
+                        "table": {
+                          "parameter": "table"
+                        },
+                        "id": "1c65d7a5-4618-4e4d-a5de-64e43f79db36"
+                      },
+                      "value-path": "Claims",
+                      "value-title": "DisplayName",
+                      "value-collection": "value"
+                    }
+                  },
+                  "DisplayName": {
+                    "title": "DisplayName",
+                    "type": "string",
+                    "x-ms-permission": "read-only",
+                    "x-ms-capabilities": {
+                      "x-ms-sp": {
+                        "OdataQueryName": "Title"
+                      },
+                      "filterFunctions": [
+                        "eq",
+                        "startswith"
+                      ]
+                    }
+                  },
+                  "Email": {
+                    "title": "Email",
+                    "type": "string",
+                    "format": "email",
+                    "x-ms-permission": "read-only",
+                    "x-ms-capabilities": {
+                      "x-ms-sp": {
+                        "OdataQueryName": "EMail"
+                      },
+                      "filterFunctions": [
+                        "eq",
+                        "startswith"
+                      ]
+                    }
+                  },
+                  "Picture": {
+                    "title": "Picture",
+                    "type": "string",
+                    "format": "uri",
+                    "x-ms-media-kind": "image",
+                    "x-ms-media-default-folder-path": "/sites/Aromatics/IAI",
+                    "x-ms-media-base-url": "https://ineosgroup.sharepoint.com/sites/Aromatics/IAI",
+                    "x-ms-permission": "read-only"
+                  },
+                  "Department": {
+                    "title": "Department",
+                    "type": "string",
+                    "x-ms-permission": "read-only"
+                  },
+                  "JobTitle": {
+                    "title": "JobTitle",
+                    "type": "string",
+                    "x-ms-permission": "read-only"
+                  }
+                },
+                "x-ms-displayFormat": {
+                  "titleProperty": "DisplayName",
+                  "subtitleProperty": "Email",
+                  "thumbnailProperty": "Picture"
+                }
+              },
+              "CreatedDate": {
+                "title": "CreatedDate",
+                "type": "string",
+                "format": "date",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "gt",
+                    "ge",
+                    "lt",
+                    "le",
+                    "ne"
+                  ]
+                }
+              },
+              "LastUpdate": {
+                "title": "LastUpdate",
+                "type": "string",
+                "format": "date",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "gt",
+                    "ge",
+                    "lt",
+                    "le",
+                    "ne"
+                  ]
+                }
+              },
+              "Catatan": {
+                "title": "CatatanRequestor",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "none"
+              },
+              "OData__ColorTag": {
+                "title": "Color Tag",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "maxLength": 255
+              },
+              "ComplianceAssetId": {
+                "title": "Compliance Asset Id",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "maxLength": 255
+              },
+              "Modified": {
+                "title": "Modified",
+                "description": "When this item was last changed.",
+                "type": "string",
+                "format": "date-time",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "gt",
+                    "ge",
+                    "lt",
+                    "le",
+                    "ne"
+                  ]
+                }
+              },
+              "Created": {
+                "title": "Created",
+                "description": "When this item was created.",
+                "type": "string",
+                "format": "date-time",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "gt",
+                    "ge",
+                    "lt",
+                    "le",
+                    "ne"
+                  ]
+                }
+              },
+              "Author#Claims": {
+                "title": "Created By Claims",
+                "type": "string",
+                "description": "Internal identifier for the user who created this item.",
+                "x-ms-permission": "read-only",
+                "x-ms-visibility": "internal"
+              },
+              "Author": {
+                "title": "Created By",
+                "description": "The user who created this item.",
+                "type": "object",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq"
+                  ]
+                },
+                "properties": {
+                  "@odata.type": {
+                    "title": "@odata.type",
+                    "x-ms-visibility": "internal",
+                    "type": "string",
+                    "x-ms-permission": "read-only"
+                  },
+                  "Claims": {
+                    "title": "Claims",
+                    "type": "string",
+                    "description": "Internal identifier for the user who created this item.",
+                    "x-ms-permission": "read-only",
+                    "x-ms-dynamic-values": {
+                      "operationId": "GetEntityValues",
+                      "parameters": {
+                        "dataset": {
+                          "parameter": "dataset"
+                        },
+                        "table": {
+                          "parameter": "table"
+                        },
+                        "id": "1df5e554-ec7e-46a6-901d-d85a3881cb18"
+                      },
+                      "value-path": "Claims",
+                      "value-title": "DisplayName",
+                      "value-collection": "value"
+                    }
+                  },
+                  "DisplayName": {
+                    "title": "DisplayName",
+                    "type": "string",
+                    "description": "The name of the user who created this item.",
+                    "x-ms-permission": "read-only",
+                    "x-ms-capabilities": {
+                      "x-ms-sp": {
+                        "OdataQueryName": "Title"
+                      },
+                      "filterFunctions": [
+                        "eq",
+                        "startswith"
+                      ]
+                    }
+                  },
+                  "Email": {
+                    "title": "Email",
+                    "type": "string",
+                    "description": "Email address of the user who created this item.",
+                    "format": "email",
+                    "x-ms-permission": "read-only",
+                    "x-ms-capabilities": {
+                      "x-ms-sp": {
+                        "OdataQueryName": "EMail"
+                      },
+                      "filterFunctions": [
+                        "eq",
+                        "startswith"
+                      ]
+                    }
+                  },
+                  "Picture": {
+                    "title": "Picture",
+                    "type": "string",
+                    "description": "Link to a picture of the user who created this item.",
+                    "format": "uri",
+                    "x-ms-media-kind": "image",
+                    "x-ms-media-default-folder-path": "/sites/Aromatics/IAI",
+                    "x-ms-media-base-url": "https://ineosgroup.sharepoint.com/sites/Aromatics/IAI",
+                    "x-ms-permission": "read-only"
+                  },
+                  "Department": {
+                    "title": "Department",
+                    "type": "string",
+                    "description": "Department name of the user who created this item.",
+                    "x-ms-permission": "read-only"
+                  },
+                  "JobTitle": {
+                    "title": "JobTitle",
+                    "type": "string",
+                    "description": "Job title of the user who created this item.",
+                    "x-ms-permission": "read-only"
+                  }
+                },
+                "x-ms-displayFormat": {
+                  "titleProperty": "DisplayName",
+                  "subtitleProperty": "Email",
+                  "thumbnailProperty": "Picture"
+                }
+              },
+              "Editor#Claims": {
+                "title": "Modified By Claims",
+                "type": "string",
+                "description": "Internal identifier for the user who last changed this item.",
+                "x-ms-permission": "read-only",
+                "x-ms-visibility": "internal"
+              },
+              "Editor": {
+                "title": "Modified By",
+                "description": "The user who last changed this item.",
+                "type": "object",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq"
+                  ]
+                },
+                "properties": {
+                  "@odata.type": {
+                    "title": "@odata.type",
+                    "x-ms-visibility": "internal",
+                    "type": "string",
+                    "x-ms-permission": "read-only"
+                  },
+                  "Claims": {
+                    "title": "Claims",
+                    "type": "string",
+                    "description": "Internal identifier for the user who last changed this item.",
+                    "x-ms-permission": "read-only",
+                    "x-ms-dynamic-values": {
+                      "operationId": "GetEntityValues",
+                      "parameters": {
+                        "dataset": {
+                          "parameter": "dataset"
+                        },
+                        "table": {
+                          "parameter": "table"
+                        },
+                        "id": "d31655d1-1d5b-4511-95a1-7a09e9b75bf2"
+                      },
+                      "value-path": "Claims",
+                      "value-title": "DisplayName",
+                      "value-collection": "value"
+                    }
+                  },
+                  "DisplayName": {
+                    "title": "DisplayName",
+                    "type": "string",
+                    "description": "The name of the user who last changed this item.",
+                    "x-ms-permission": "read-only",
+                    "x-ms-capabilities": {
+                      "x-ms-sp": {
+                        "OdataQueryName": "Title"
+                      },
+                      "filterFunctions": [
+                        "eq",
+                        "startswith"
+                      ]
+                    }
+                  },
+                  "Email": {
+                    "title": "Email",
+                    "type": "string",
+                    "description": "Email address of the user who last changed this item.",
+                    "format": "email",
+                    "x-ms-permission": "read-only",
+                    "x-ms-capabilities": {
+                      "x-ms-sp": {
+                        "OdataQueryName": "EMail"
+                      },
+                      "filterFunctions": [
+                        "eq",
+                        "startswith"
+                      ]
+                    }
+                  },
+                  "Picture": {
+                    "title": "Picture",
+                    "type": "string",
+                    "description": "Link to a picture of the user who last changed this item.",
+                    "format": "uri",
+                    "x-ms-media-kind": "image",
+                    "x-ms-media-default-folder-path": "/sites/Aromatics/IAI",
+                    "x-ms-media-base-url": "https://ineosgroup.sharepoint.com/sites/Aromatics/IAI",
+                    "x-ms-permission": "read-only"
+                  },
+                  "Department": {
+                    "title": "Department",
+                    "type": "string",
+                    "description": "Department name of the user who last changed this item.",
+                    "x-ms-permission": "read-only"
+                  },
+                  "JobTitle": {
+                    "title": "JobTitle",
+                    "type": "string",
+                    "description": "Job title of the user who last changed this item.",
+                    "x-ms-permission": "read-only"
+                  }
+                },
+                "x-ms-displayFormat": {
+                  "titleProperty": "DisplayName",
+                  "subtitleProperty": "Email",
+                  "thumbnailProperty": "Picture"
+                }
+              },
+              "{Identifier}": {
+                "title": "Identifier",
+                "description": "Value that can be used in file related actions for selecting a file.",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{IsFolder}": {
+                "title": "Is folder",
+                "description": "True when the item is a folder, false otherwise.",
+                "type": "boolean",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{Link}": {
+                "title": "Link to item",
+                "description": "Link that can be used to get to the file or list item. Only people with permissions to the item will be able to open the link.",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{Name}": {
+                "title": "Name",
+                "description": "File name of the item in document libraries, display name of the item in lists.",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{FilenameWithExtension}": {
+                "title": "File name with extension",
+                "description": "For libraries, returns file name including extension. For lists, returns the title property.",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{Path}": {
+                "title": "Folder path",
+                "description": "Path to the folder the item is in, relative to the site address.",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{FullPath}": {
+                "title": "Full Path",
+                "description": "Full path of an item or a folder or a file",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{ModerationStatus}": {
+                "title": "Content approval status",
+                "description": "The content approval status. It can be one of the following: Draft, Pending, Approved, or Rejected",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{ModerationComment}": {
+                "title": "Comments associated with the content approval of this list item",
+                "description": "The comments associated with moderation of the list item.",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{ContentType}#Id": {
+                "title": "Content type Id",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-visibility": "internal"
+              },
+              "{ContentType}": {
+                "title": "Content type",
+                "description": "Name of the Content type of the item.",
+                "type": "object",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "none",
+                "properties": {
+                  "@odata.type": {
+                    "title": "@odata.type",
+                    "x-ms-visibility": "internal",
+                    "type": "string",
+                    "x-ms-permission": "read-write"
+                  },
+                  "Id": {
+                    "title": "Id",
+                    "type": "string",
+                    "x-ms-dynamic-values": {
+                      "operationId": "GetEntityValues",
+                      "parameters": {
+                        "dataset": {
+                          "parameter": "dataset"
+                        },
+                        "table": {
+                          "parameter": "table"
+                        },
+                        "id": "4651e8f2-38c9-4ad0-8def-41f743f76f30"
+                      },
+                      "value-path": "Id",
+                      "value-title": "Name",
+                      "value-collection": "value"
+                    }
+                  },
+                  "Name": {
+                    "title": "Name",
+                    "type": "string",
+                    "x-ms-permission": "read-only"
+                  }
+                },
+                "x-ms-displayFormat": {
+                  "titleProperty": "Name"
+                }
+              },
+              "{HasAttachments}": {
+                "title": "Has attachments",
+                "description": "Indicates the presence of attachments in the item.",
+                "type": "boolean",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{Attachments}@odata.type": {
+                "title": "{Attachments}",
+                "type": "string",
+                "x-ms-visibility": "internal",
+                "x-ms-permission": "read-write"
+              },
+              "{Attachments}": {
+                "title": "Attachments",
+                "description": "Never returns any data. Use Attachment endpoints to access item attachments.",
+                "x-ms-permission": "read-write",
+                "targetEntity": "attachments",
+                "format": "x-ms-containedMediaEntity",
+                "x-ms-visibility": "internal",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "format": "x-ms-mediaEntity",
+                  "x-ms-sort": "none",
+                  "properties": {
+                    "@odata.type": {
+                      "title": "@odata.type",
+                      "x-ms-visibility": "internal",
+                      "type": "string",
+                      "x-ms-permission": "read-write"
+                    },
+                    "Id": {
+                      "title": "Id",
+                      "type": "string",
+                      "x-ms-keyType": "primary",
+                      "x-ms-keyOrder": 1,
+                      "x-ms-permission": "read-only"
+                    },
+                    "AbsoluteUri": {
+                      "title": "AbsoluteUri",
+                      "type": "string",
+                      "format": "uri",
+                      "x-ms-permission": "read-only"
+                    },
+                    "DisplayName": {
+                      "title": "DisplayName",
+                      "type": "string",
+                      "x-ms-permission": "read-only"
+                    }
+                  }
+                },
+                "@odata.type": "#Collection(Microsoft.Azure.Connectors.SharePoint.SPListItemAttachment)"
+              },
+              "{VersionNumber}": {
+                "title": "Version number",
+                "description": "The version number of the file or the list item.",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{TriggerWindowStartToken}": {
+                "title": "Trigger Window Start Token",
+                "description": "A token expressing the time of the last flow check. Use this if you want to check if one or more columns were modified since the last flow check.",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{TriggerWindowEndToken}": {
+                "title": "Trigger Window End Token",
+                "description": "A token expressing the time of the current flow check. Use this if you want to check if one or more columns were modified since the last flow check.",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              }
+            },
+            "x-ms-relationships": {
+              "Departemen": {
+                "targetEntity": "Departemen",
+                "referentialConstraints": {
+                  "Departemen#Id": {
+                    "referencedProperty": "Id"
+                  }
+                }
+              },
+              "Tujuan": {
+                "targetEntity": "Tujuan",
+                "referentialConstraints": {
+                  "Tujuan#Id": {
+                    "referencedProperty": "Id"
+                  }
+                }
+              },
+              "CurrentStatus": {
+                "targetEntity": "CurrentStatus",
+                "referentialConstraints": {
+                  "CurrentStatus#Id": {
+                    "referencedProperty": "Id"
+                  }
+                }
+              },
+              "AdminDecision": {
+                "targetEntity": "AdminDecision",
+                "referentialConstraints": {
+                  "AdminDecision#Id": {
+                    "referencedProperty": "Id"
+                  }
+                }
+              },
+              "PlantDirectorDecision": {
+                "targetEntity": "PlantDirectorDecision",
+                "referentialConstraints": {
+                  "PlantDirectorDecision#Id": {
+                    "referencedProperty": "Id"
+                  }
+                }
+              },
+              "RequesterManager": {
+                "targetEntity": "RequesterManager",
+                "referentialConstraints": {
+                  "RequesterManager#Claims": {
+                    "referencedProperty": "Claims"
+                  }
+                }
+              },
+              "Author": {
+                "targetEntity": "Author",
+                "referentialConstraints": {
+                  "Author#Claims": {
+                    "referencedProperty": "Claims"
+                  }
+                }
+              },
+              "Editor": {
+                "targetEntity": "Editor",
+                "referentialConstraints": {
+                  "Editor#Claims": {
+                    "referencedProperty": "Claims"
+                  }
+                }
+              },
+              "{ContentType}": {
+                "targetEntity": "4651e8f2-38c9-4ad0-8def-41f743f76f30",
+                "referentialConstraints": {
+                  "{ContentType}#Id": {
+                    "referencedProperty": "Id"
+                  }
+                }
+              }
+            },
+            "x-ms-displayFormat": {
+              "propertiesDisplayOrder": [
+                "Title",
+                "NamaPemohon",
+                "EmailPemohon",
+                "Departemen",
+                "Tanggal",
+                "Date",
+                "JumlahPenumpang",
+                "TitikJemput",
+                "Tujuan",
+                "TujuanLainnyaDet",
+                "Keperluan",
+                "CurrentStatus",
+                "AdminDecision",
+                "AdminNote",
+                "PlantDirectorDecision",
+                "PlantDirectorNote",
+                "RequesterManager",
+                "CreatedDate",
+                "LastUpdate",
+                "Catatan",
+                "{Attachments}"
+              ],
+              "propertiesCompactDisplayOrder": [
+                "Title",
+                "NamaPemohon",
+                "EmailPemohon",
+                "Departemen",
+                "Tanggal",
+                "Date",
+                "Tujuan",
+                "TujuanLainnyaDet",
+                "Keperluan",
+                "JumlahPenumpang",
+                "TitikJemput",
+                "CurrentStatus",
+                "AdminDecision",
+                "AdminNote",
+                "PlantDirectorDecision",
+                "PlantDirectorNote",
+                "RequesterManager",
+                "CreatedDate",
+                "LastUpdate",
+                "Catatan"
+              ],
+              "propertiesTabularDisplayOrder": [
+                "Title",
+                "NamaPemohon",
+                "EmailPemohon",
+                "Departemen",
+                "Tanggal",
+                "Date",
+                "Tujuan",
+                "TujuanLainnyaDet",
+                "Keperluan",
+                "JumlahPenumpang",
+                "TitikJemput",
+                "CurrentStatus",
+                "AdminDecision",
+                "AdminNote",
+                "PlantDirectorDecision",
+                "PlantDirectorNote",
+                "RequesterManager",
+                "CreatedDate",
+                "LastUpdate",
+                "Catatan"
+              ]
+            }
+          }
+        },
+        "referencedEntities": {
+          "Departemen": {
+            "lookupEndpoint": {
+              "path": "/tables/0116186b-3f6b-4431-bde5-d092cd0df898/entities/Departemen",
+              "capabilities": {
+                "searchable": true,
+                "requiresSearch": false
+              }
+            }
+          },
+          "Tujuan": {
+            "lookupEndpoint": {
+              "path": "/tables/0116186b-3f6b-4431-bde5-d092cd0df898/entities/Tujuan",
+              "capabilities": {
+                "searchable": true,
+                "requiresSearch": false
+              }
+            }
+          },
+          "CurrentStatus": {
+            "lookupEndpoint": {
+              "path": "/tables/0116186b-3f6b-4431-bde5-d092cd0df898/entities/CurrentStatus",
+              "capabilities": {
+                "searchable": true,
+                "requiresSearch": false
+              }
+            }
+          },
+          "AdminDecision": {
+            "lookupEndpoint": {
+              "path": "/tables/0116186b-3f6b-4431-bde5-d092cd0df898/entities/AdminDecision",
+              "capabilities": {
+                "searchable": true,
+                "requiresSearch": false
+              }
+            }
+          },
+          "PlantDirectorDecision": {
+            "lookupEndpoint": {
+              "path": "/tables/0116186b-3f6b-4431-bde5-d092cd0df898/entities/PlantDirectorDecision",
+              "capabilities": {
+                "searchable": true,
+                "requiresSearch": false
+              }
+            }
+          },
+          "RequesterManager": {
+            "lookupEndpoint": {
+              "path": "/tables/0116186b-3f6b-4431-bde5-d092cd0df898/entities/RequesterManager",
+              "capabilities": {
+                "searchable": true,
+                "requiresSearch": false
+              }
+            }
+          },
+          "Author": {
+            "lookupEndpoint": {
+              "path": "/tables/0116186b-3f6b-4431-bde5-d092cd0df898/entities/Author",
+              "capabilities": {
+                "searchable": true,
+                "requiresSearch": false
+              }
+            }
+          },
+          "Editor": {
+            "lookupEndpoint": {
+              "path": "/tables/0116186b-3f6b-4431-bde5-d092cd0df898/entities/Editor",
+              "capabilities": {
+                "searchable": true,
+                "requiresSearch": false
+              }
+            }
+          },
+          "4651e8f2-38c9-4ad0-8def-41f743f76f30": {
+            "lookupEndpoint": {
+              "path": "/tables/0116186b-3f6b-4431-bde5-d092cd0df898/entities/%257bContentType%257d",
+              "capabilities": {
+                "searchable": true,
+                "requiresSearch": false
+              }
+            }
+          }
+        },
+        "webUrl": "https://ineosgroup.sharepoint.com/sites/Aromatics/IAI/Lists/RequestKendaraan/AllItems.aspx"
+      },
+      "apiMetadataTableId": "0116186b-3f6b-4431-bde5-d092cd0df898",
+      "apiDataTableId": "0116186b-3f6b-4431-bde5-d092cd0df898",
+      "powerConfigData": {
+        "connectionReferences": {
+          "400133f4-cac9-4e2d-9610-4ee57df7e0a0": {
+            "id": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+            "displayName": "SharePoint",
+            "dataSources": [
+              "requestkendaraan"
+            ],
+            "authenticationType": null,
+            "sharedConnectionId": null,
+            "dataSets": {
+              "https%253A%252F%252Fineosgroup.sharepoint.com%252Fsites%252FAromatics%252FIAI": {
+                "dataSources": {
+                  "requestkendaraan": {
+                    "tableName": "0116186b-3f6b-4431-bde5-d092cd0df898"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "typescriptModelInterfaceName": "RequestKendaraan",
+      "typescriptServiceClassName": "RequestKendaraanService",
+      "modelFileName": "request-kendaraan-model",
+      "serviceFileName": "request-kendaraan-service",
+      "hookFileName": "use-request-kendaraan",
+      "validatorFileName": "request-kendaraan-validator",
+      "columns": [
+        {
+          "displayName": "ID",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Counter"
+          },
+          "apiPropertyName": "ID",
+          "apiPropertyNameCaseSensitive": "ID",
+          "typescriptPropertyName": "id",
+          "isPrimaryName": false,
+          "isPrimaryId": true,
+          "type": "Integer",
+          "validationMetadata": {
+            "idValidationType": "string"
+          }
+        },
+        {
+          "displayName": "Title",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Text",
+            "maxLength": 255
+          },
+          "apiPropertyName": "Title",
+          "apiPropertyNameCaseSensitive": "Title",
+          "typescriptPropertyName": "title",
+          "isPrimaryName": true,
+          "isPrimaryId": false,
+          "type": "Text",
+          "validationMetadata": {
+            "maxLength": 255
+          }
+        },
+        {
+          "displayName": "AdminDecision",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Choice"
+          },
+          "optionSetMetadata": {
+            "options": [
+              {
+                "label": "Approved",
+                "typescriptValue": "Approved",
+                "apiValue": "Approved"
+              },
+              {
+                "label": "Rejected",
+                "typescriptValue": "Rejected",
+                "apiValue": "Rejected"
+              },
+              {
+                "label": "Available",
+                "typescriptValue": "Available",
+                "apiValue": "Available"
+              },
+              {
+                "label": "Not Available",
+                "typescriptValue": "NotAvailable",
+                "apiValue": "Not Available"
+              }
+            ],
+            "optionSetTypeScriptEnumName": "RequestKendaraanAdminDecisionKeyToLabel",
+            "optionSetTypeScriptEnumTypeName": "RequestKendaraanAdminDecisionKey"
+          },
+          "apiPropertyName": "AdminDecision",
+          "apiPropertyNameCaseSensitive": "AdminDecision",
+          "typescriptPropertyName": "adminDecisionKey",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "Choice",
+          "validationMetadata": {}
+        },
+        {
+          "displayName": "AdminNote",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Note"
+          },
+          "apiPropertyName": "AdminNote",
+          "apiPropertyNameCaseSensitive": "AdminNote",
+          "typescriptPropertyName": "adminNote",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "MultiLineTextArea",
+          "validationMetadata": {}
+        },
+        {
+          "displayName": "CatatanRequestor",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Note"
+          },
+          "apiPropertyName": "Catatan",
+          "apiPropertyNameCaseSensitive": "Catatan",
+          "typescriptPropertyName": "catatan",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "MultiLineTextArea",
+          "validationMetadata": {}
+        },
+        {
+          "displayName": "CreatedDate",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "DateTime",
+            "description": "Date only format (YYYY-MM-DD). No time component."
+          },
+          "apiPropertyName": "CreatedDate",
+          "apiPropertyNameCaseSensitive": "CreatedDate",
+          "typescriptPropertyName": "createdDate",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "DateOnly",
+          "validationMetadata": {
+            "dateRegex": {
+              "pattern": "/^\\d{4}-\\d{2}-\\d{2}$/",
+              "message": "Use YYYY-MM-DD"
+            }
+          }
+        },
+        {
+          "displayName": "CurrentStatus",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Choice"
+          },
+          "optionSetMetadata": {
+            "options": [
+              {
+                "label": "Submitted",
+                "typescriptValue": "Submitted",
+                "apiValue": "Submitted"
+              },
+              {
+                "label": "Approved",
+                "typescriptValue": "Approved",
+                "apiValue": "Approved"
+              },
+              {
+                "label": "Rejected - Vehicle Not Available",
+                "typescriptValue": "RejectedVehicleNotAvailable",
+                "apiValue": "Rejected - Vehicle Not Available"
+              },
+              {
+                "label": "Pending Plant Director Approval",
+                "typescriptValue": "PendingPlantDirectorApproval",
+                "apiValue": "Pending Plant Director Approval"
+              }
+            ],
+            "optionSetTypeScriptEnumName": "RequestKendaraanCurrentStatusKeyToLabel",
+            "optionSetTypeScriptEnumTypeName": "RequestKendaraanCurrentStatusKey"
+          },
+          "apiPropertyName": "CurrentStatus",
+          "apiPropertyNameCaseSensitive": "CurrentStatus",
+          "typescriptPropertyName": "currentStatusKey",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "Choice",
+          "validationMetadata": {}
+        },
+        {
+          "displayName": "Departemen",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Choice"
+          },
+          "optionSetMetadata": {
+            "options": [
+              {
+                "label": "Commercial",
+                "typescriptValue": "Commercial",
+                "apiValue": "Commercial"
+              },
+              {
+                "label": "Finance & Accounting",
+                "typescriptValue": "FinanceAccounting",
+                "apiValue": "Finance & Accounting"
+              },
+              {
+                "label": "HR",
+                "typescriptValue": "HR",
+                "apiValue": "HR"
+              },
+              {
+                "label": "IT&S",
+                "typescriptValue": "ITS",
+                "apiValue": "IT&S"
+              },
+              {
+                "label": "Lab",
+                "typescriptValue": "Lab",
+                "apiValue": "Lab"
+              },
+              {
+                "label": "Maintenance",
+                "typescriptValue": "Maintenance",
+                "apiValue": "Maintenance"
+              },
+              {
+                "label": "Operation",
+                "typescriptValue": "Operation",
+                "apiValue": "Operation"
+              },
+              {
+                "label": "PD (Logistic)",
+                "typescriptValue": "PDLogistic",
+                "apiValue": "PD (Logistic)"
+              },
+              {
+                "label": "Procurement",
+                "typescriptValue": "Procurement",
+                "apiValue": "Procurement"
+              },
+              {
+                "label": "SHE",
+                "typescriptValue": "SHE",
+                "apiValue": "SHE"
+              }
+            ],
+            "optionSetTypeScriptEnumName": "RequestKendaraanDepartemenKeyToLabel",
+            "optionSetTypeScriptEnumTypeName": "RequestKendaraanDepartemenKey"
+          },
+          "apiPropertyName": "Departemen",
+          "apiPropertyNameCaseSensitive": "Departemen",
+          "typescriptPropertyName": "departemenKey",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "Choice",
+          "validationMetadata": {}
+        },
+        {
+          "displayName": "EmailPemohon",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Text",
+            "maxLength": 255
+          },
+          "apiPropertyName": "EmailPemohon",
+          "apiPropertyNameCaseSensitive": "EmailPemohon",
+          "typescriptPropertyName": "emailPemohon",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "Text",
+          "validationMetadata": {
+            "maxLength": 255
+          }
+        },
+        {
+          "displayName": "Jam",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Text",
+            "maxLength": 255
+          },
+          "apiPropertyName": "Date",
+          "apiPropertyNameCaseSensitive": "Date",
+          "typescriptPropertyName": "jam",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "Text",
+          "validationMetadata": {
+            "maxLength": 255
+          }
+        },
+        {
+          "displayName": "JumlahPenumpang",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Text",
+            "maxLength": 255
+          },
+          "apiPropertyName": "JumlahPenumpang",
+          "apiPropertyNameCaseSensitive": "JumlahPenumpang",
+          "typescriptPropertyName": "jumlahPenumpang",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "Text",
+          "validationMetadata": {
+            "maxLength": 255
+          }
+        },
+        {
+          "displayName": "Keperluan",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Note"
+          },
+          "apiPropertyName": "Keperluan",
+          "apiPropertyNameCaseSensitive": "Keperluan",
+          "typescriptPropertyName": "keperluan",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "MultiLineTextArea",
+          "validationMetadata": {}
+        },
+        {
+          "displayName": "LastUpdate",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "DateTime",
+            "description": "Date only format (YYYY-MM-DD). No time component."
+          },
+          "apiPropertyName": "LastUpdate",
+          "apiPropertyNameCaseSensitive": "LastUpdate",
+          "typescriptPropertyName": "lastUpdate",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "DateOnly",
+          "validationMetadata": {
+            "dateRegex": {
+              "pattern": "/^\\d{4}-\\d{2}-\\d{2}$/",
+              "message": "Use YYYY-MM-DD"
+            }
+          }
+        },
+        {
+          "displayName": "NamaPemohon",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Text",
+            "maxLength": 255
+          },
+          "apiPropertyName": "NamaPemohon",
+          "apiPropertyNameCaseSensitive": "NamaPemohon",
+          "typescriptPropertyName": "namaPemohon",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "Text",
+          "validationMetadata": {
+            "maxLength": 255
+          }
+        },
+        {
+          "displayName": "PlantDirectorDecision",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Choice"
+          },
+          "optionSetMetadata": {
+            "options": [
+              {
+                "label": "Approved",
+                "typescriptValue": "Approved",
+                "apiValue": "Approved"
+              },
+              {
+                "label": "Rejected",
+                "typescriptValue": "Rejected",
+                "apiValue": "Rejected"
+              }
+            ],
+            "optionSetTypeScriptEnumName": "RequestKendaraanPlantDirectorDecisionKeyToLabel",
+            "optionSetTypeScriptEnumTypeName": "RequestKendaraanPlantDirectorDecisionKey"
+          },
+          "apiPropertyName": "PlantDirectorDecision",
+          "apiPropertyNameCaseSensitive": "PlantDirectorDecision",
+          "typescriptPropertyName": "plantDirectorDecisionKey",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "Choice",
+          "validationMetadata": {}
+        },
+        {
+          "displayName": "PlantDirectorNote",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Note"
+          },
+          "apiPropertyName": "PlantDirectorNote",
+          "apiPropertyNameCaseSensitive": "PlantDirectorNote",
+          "typescriptPropertyName": "plantDirectorNote",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "MultiLineTextArea",
+          "validationMetadata": {}
+        },
+        {
+          "displayName": "Tanggal",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "DateTime",
+            "description": "Date only format (YYYY-MM-DD). No time component."
+          },
+          "apiPropertyName": "Tanggal",
+          "apiPropertyNameCaseSensitive": "Tanggal",
+          "typescriptPropertyName": "tanggal",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "DateOnly",
+          "validationMetadata": {
+            "dateRegex": {
+              "pattern": "/^\\d{4}-\\d{2}-\\d{2}$/",
+              "message": "Use YYYY-MM-DD"
+            }
+          }
+        },
+        {
+          "displayName": "TitikJemput",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Text",
+            "maxLength": 255
+          },
+          "apiPropertyName": "TitikJemput",
+          "apiPropertyNameCaseSensitive": "TitikJemput",
+          "typescriptPropertyName": "titikJemput",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "Text",
+          "validationMetadata": {
+            "maxLength": 255
+          }
+        },
+        {
+          "displayName": "Tujuan",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Choice"
+          },
+          "optionSetMetadata": {
+            "options": [
+              {
+                "label": "Jakarta - Merak",
+                "typescriptValue": "JakartaMerak",
+                "apiValue": "Jakarta - Merak"
+              },
+              {
+                "label": "Merak - Jakarta (HO)",
+                "typescriptValue": "MerakJakartaHO",
+                "apiValue": "Merak - Jakarta (HO)"
+              },
+              {
+                "label": "Lainnya",
+                "typescriptValue": "Lainnya",
+                "apiValue": "Lainnya"
+              }
+            ],
+            "optionSetTypeScriptEnumName": "RequestKendaraanTujuanKeyToLabel",
+            "optionSetTypeScriptEnumTypeName": "RequestKendaraanTujuanKey"
+          },
+          "apiPropertyName": "Tujuan",
+          "apiPropertyNameCaseSensitive": "Tujuan",
+          "typescriptPropertyName": "tujuanKey",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "Choice",
+          "validationMetadata": {}
+        },
+        {
+          "displayName": "TujuanLainnyaDet",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Text",
+            "maxLength": 255
+          },
+          "apiPropertyName": "TujuanLainnyaDet",
+          "apiPropertyNameCaseSensitive": "TujuanLainnyaDet",
+          "typescriptPropertyName": "tujuanLainnyaDet",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "Text",
+          "validationMetadata": {
+            "maxLength": 255
+          }
+        }
+      ]
+    },
+    {
+      "dataSourceKey": "extramealreq",
+      "schemaFileName": "sharepoint/83f8af7d-243b-44b1-87dd-30e7a3a3365e.Schema",
+      "dataSourceType": "SharePoint",
+      "schema": {
+        "name": "83f8af7d-243b-44b1-87dd-30e7a3a3365e",
+        "title": "extramealreq",
+        "x-ms-permission": "read-write",
+        "x-ms-capabilities": {
+          "sortRestrictions": {
+            "sortable": true,
+            "unsortableProperties": [
+              "Purpose",
+              "AdditionalRequest",
+              "{Identifier}",
+              "{IsFolder}",
+              "{Link}",
+              "{Name}",
+              "{FilenameWithExtension}",
+              "{Path}",
+              "{FullPath}",
+              "{ModerationStatus}",
+              "{ModerationComment}",
+              "{ContentType}",
+              "{HasAttachments}",
+              "{Attachments}",
+              "{VersionNumber}",
+              "{TriggerWindowStartToken}",
+              "{TriggerWindowEndToken}"
+            ]
+          },
+          "filterRestrictions": {
+            "filterable": true,
+            "nonFilterableProperties": [
+              "Purpose",
+              "AdditionalRequest",
+              "{Identifier}",
+              "{IsFolder}",
+              "{Link}",
+              "{Name}",
+              "{FilenameWithExtension}",
+              "{Path}",
+              "{FullPath}",
+              "{ModerationStatus}",
+              "{ModerationComment}",
+              "{ContentType}",
+              "{HasAttachments}",
+              "{Attachments}",
+              "{VersionNumber}",
+              "{TriggerWindowStartToken}",
+              "{TriggerWindowEndToken}"
+            ]
+          },
+          "isOnlyServerPagable": true,
+          "filterFunctionSupport": [
+            "and",
+            "or",
+            "eq",
+            "startswith",
+            "gt",
+            "ge",
+            "lt",
+            "le",
+            "ne"
+          ],
+          "serverPagingOptions": [
+            "top",
+            "skiptoken"
+          ],
+          "odataVersion": 3
+        },
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [],
+            "properties": {
+              "ID": {
+                "title": "ID",
+                "description": "List item id. Use this value for specifying the item to act on in other list related actions.",
+                "type": "integer",
+                "format": "int64",
+                "x-ms-keyType": "primary",
+                "x-ms-keyOrder": 1,
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq"
+                  ]
+                }
+              },
+              "Title": {
+                "title": "Title",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "maxLength": 255
+              },
+              "RequestID": {
+                "title": "RequestID",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "maxLength": 255
+              },
+              "RecordID": {
+                "title": "RecordID",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "maxLength": 255
+              },
+              "ServiceDate": {
+                "title": "ServiceDate",
+                "type": "string",
+                "format": "date",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "gt",
+                    "ge",
+                    "lt",
+                    "le",
+                    "ne"
+                  ]
+                }
+              },
+              "RequesterName": {
+                "title": "RequesterName",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "maxLength": 255
+              },
+              "RequesterEmail": {
+                "title": "RequesterEmail",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "maxLength": 255
+              },
+              "Department": {
+                "title": "Department",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "maxLength": 255
+              },
+              "Purpose": {
+                "title": "Purpose",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "none"
+              },
+              "StartDate": {
+                "title": "StartDate",
+                "type": "string",
+                "format": "date",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "gt",
+                    "ge",
+                    "lt",
+                    "le",
+                    "ne"
+                  ]
+                }
+              },
+              "EndDate": {
+                "title": "EndDate",
+                "type": "string",
+                "format": "date",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "gt",
+                    "ge",
+                    "lt",
+                    "le",
+                    "ne"
+                  ]
+                }
+              },
+              "DurationHours": {
+                "title": "DurationHours",
+                "type": "number",
+                "format": "double",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "gt",
+                    "ge",
+                    "lt",
+                    "le",
+                    "ne"
+                  ]
+                },
+                "maximum": 1.7976931348623157e+308,
+                "minimum": -1.7976931348623157e+308
+              },
+              "MealCategory": {
+                "title": "MealCategory",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "maxLength": 255
+              },
+              "Quantity": {
+                "title": "Quantity",
+                "type": "number",
+                "format": "double",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "gt",
+                    "ge",
+                    "lt",
+                    "le",
+                    "ne"
+                  ]
+                },
+                "maximum": 1.7976931348623157e+308,
+                "minimum": -1.7976931348623157e+308
+              },
+              "AdditionalRequest": {
+                "title": "AdditionalRequest",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "none"
+              },
+              "CurrentStatus": {
+                "title": "CurrentStatus",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "maxLength": 255
+              },
+              "ApprovalTrigger": {
+                "title": "ApprovalTrigger",
+                "type": "boolean",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq"
+                  ]
+                },
+                "default": true
+              },
+              "RequestCreatedAt": {
+                "title": "RequestCreatedAt",
+                "type": "string",
+                "format": "date-time",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "gt",
+                    "ge",
+                    "lt",
+                    "le",
+                    "ne"
+                  ]
+                }
+              },
+              "OData__ColorTag": {
+                "title": "Color Tag",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "maxLength": 255
+              },
+              "ComplianceAssetId": {
+                "title": "Compliance Asset Id",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "maxLength": 255
+              },
+              "Modified": {
+                "title": "Modified",
+                "description": "When this item was last changed.",
+                "type": "string",
+                "format": "date-time",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "gt",
+                    "ge",
+                    "lt",
+                    "le",
+                    "ne"
+                  ]
+                }
+              },
+              "Created": {
+                "title": "Created",
+                "description": "When this item was created.",
+                "type": "string",
+                "format": "date-time",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "gt",
+                    "ge",
+                    "lt",
+                    "le",
+                    "ne"
+                  ]
+                }
+              },
+              "Author#Claims": {
+                "title": "Created By Claims",
+                "type": "string",
+                "description": "Internal identifier for the user who created this item.",
+                "x-ms-permission": "read-only",
+                "x-ms-visibility": "internal"
+              },
+              "Author": {
+                "title": "Created By",
+                "description": "The user who created this item.",
+                "type": "object",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq"
+                  ]
+                },
+                "properties": {
+                  "@odata.type": {
+                    "title": "@odata.type",
+                    "x-ms-visibility": "internal",
+                    "type": "string",
+                    "x-ms-permission": "read-only"
+                  },
+                  "Claims": {
+                    "title": "Claims",
+                    "type": "string",
+                    "description": "Internal identifier for the user who created this item.",
+                    "x-ms-permission": "read-only",
+                    "x-ms-dynamic-values": {
+                      "operationId": "GetEntityValues",
+                      "parameters": {
+                        "dataset": {
+                          "parameter": "dataset"
+                        },
+                        "table": {
+                          "parameter": "table"
+                        },
+                        "id": "1df5e554-ec7e-46a6-901d-d85a3881cb18"
+                      },
+                      "value-path": "Claims",
+                      "value-title": "DisplayName",
+                      "value-collection": "value"
+                    }
+                  },
+                  "DisplayName": {
+                    "title": "DisplayName",
+                    "type": "string",
+                    "description": "The name of the user who created this item.",
+                    "x-ms-permission": "read-only",
+                    "x-ms-capabilities": {
+                      "x-ms-sp": {
+                        "OdataQueryName": "Title"
+                      },
+                      "filterFunctions": [
+                        "eq",
+                        "startswith"
+                      ]
+                    }
+                  },
+                  "Email": {
+                    "title": "Email",
+                    "type": "string",
+                    "description": "Email address of the user who created this item.",
+                    "format": "email",
+                    "x-ms-permission": "read-only",
+                    "x-ms-capabilities": {
+                      "x-ms-sp": {
+                        "OdataQueryName": "EMail"
+                      },
+                      "filterFunctions": [
+                        "eq",
+                        "startswith"
+                      ]
+                    }
+                  },
+                  "Picture": {
+                    "title": "Picture",
+                    "type": "string",
+                    "description": "Link to a picture of the user who created this item.",
+                    "format": "uri",
+                    "x-ms-media-kind": "image",
+                    "x-ms-media-default-folder-path": "/sites/Aromatics/IAI",
+                    "x-ms-media-base-url": "https://ineosgroup.sharepoint.com/sites/Aromatics/IAI",
+                    "x-ms-permission": "read-only"
+                  },
+                  "Department": {
+                    "title": "Department",
+                    "type": "string",
+                    "description": "Department name of the user who created this item.",
+                    "x-ms-permission": "read-only"
+                  },
+                  "JobTitle": {
+                    "title": "JobTitle",
+                    "type": "string",
+                    "description": "Job title of the user who created this item.",
+                    "x-ms-permission": "read-only"
+                  }
+                },
+                "x-ms-displayFormat": {
+                  "titleProperty": "DisplayName",
+                  "subtitleProperty": "Email",
+                  "thumbnailProperty": "Picture"
+                }
+              },
+              "Editor#Claims": {
+                "title": "Modified By Claims",
+                "type": "string",
+                "description": "Internal identifier for the user who last changed this item.",
+                "x-ms-permission": "read-only",
+                "x-ms-visibility": "internal"
+              },
+              "Editor": {
+                "title": "Modified By",
+                "description": "The user who last changed this item.",
+                "type": "object",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq"
+                  ]
+                },
+                "properties": {
+                  "@odata.type": {
+                    "title": "@odata.type",
+                    "x-ms-visibility": "internal",
+                    "type": "string",
+                    "x-ms-permission": "read-only"
+                  },
+                  "Claims": {
+                    "title": "Claims",
+                    "type": "string",
+                    "description": "Internal identifier for the user who last changed this item.",
+                    "x-ms-permission": "read-only",
+                    "x-ms-dynamic-values": {
+                      "operationId": "GetEntityValues",
+                      "parameters": {
+                        "dataset": {
+                          "parameter": "dataset"
+                        },
+                        "table": {
+                          "parameter": "table"
+                        },
+                        "id": "d31655d1-1d5b-4511-95a1-7a09e9b75bf2"
+                      },
+                      "value-path": "Claims",
+                      "value-title": "DisplayName",
+                      "value-collection": "value"
+                    }
+                  },
+                  "DisplayName": {
+                    "title": "DisplayName",
+                    "type": "string",
+                    "description": "The name of the user who last changed this item.",
+                    "x-ms-permission": "read-only",
+                    "x-ms-capabilities": {
+                      "x-ms-sp": {
+                        "OdataQueryName": "Title"
+                      },
+                      "filterFunctions": [
+                        "eq",
+                        "startswith"
+                      ]
+                    }
+                  },
+                  "Email": {
+                    "title": "Email",
+                    "type": "string",
+                    "description": "Email address of the user who last changed this item.",
+                    "format": "email",
+                    "x-ms-permission": "read-only",
+                    "x-ms-capabilities": {
+                      "x-ms-sp": {
+                        "OdataQueryName": "EMail"
+                      },
+                      "filterFunctions": [
+                        "eq",
+                        "startswith"
+                      ]
+                    }
+                  },
+                  "Picture": {
+                    "title": "Picture",
+                    "type": "string",
+                    "description": "Link to a picture of the user who last changed this item.",
+                    "format": "uri",
+                    "x-ms-media-kind": "image",
+                    "x-ms-media-default-folder-path": "/sites/Aromatics/IAI",
+                    "x-ms-media-base-url": "https://ineosgroup.sharepoint.com/sites/Aromatics/IAI",
+                    "x-ms-permission": "read-only"
+                  },
+                  "Department": {
+                    "title": "Department",
+                    "type": "string",
+                    "description": "Department name of the user who last changed this item.",
+                    "x-ms-permission": "read-only"
+                  },
+                  "JobTitle": {
+                    "title": "JobTitle",
+                    "type": "string",
+                    "description": "Job title of the user who last changed this item.",
+                    "x-ms-permission": "read-only"
+                  }
+                },
+                "x-ms-displayFormat": {
+                  "titleProperty": "DisplayName",
+                  "subtitleProperty": "Email",
+                  "thumbnailProperty": "Picture"
+                }
+              },
+              "{Identifier}": {
+                "title": "Identifier",
+                "description": "Value that can be used in file related actions for selecting a file.",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{IsFolder}": {
+                "title": "Is folder",
+                "description": "True when the item is a folder, false otherwise.",
+                "type": "boolean",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{Link}": {
+                "title": "Link to item",
+                "description": "Link that can be used to get to the file or list item. Only people with permissions to the item will be able to open the link.",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{Name}": {
+                "title": "Name",
+                "description": "File name of the item in document libraries, display name of the item in lists.",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{FilenameWithExtension}": {
+                "title": "File name with extension",
+                "description": "For libraries, returns file name including extension. For lists, returns the title property.",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{Path}": {
+                "title": "Folder path",
+                "description": "Path to the folder the item is in, relative to the site address.",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{FullPath}": {
+                "title": "Full Path",
+                "description": "Full path of an item or a folder or a file",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{ModerationStatus}": {
+                "title": "Content approval status",
+                "description": "The content approval status. It can be one of the following: Draft, Pending, Approved, or Rejected",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{ModerationComment}": {
+                "title": "Comments associated with the content approval of this list item",
+                "description": "The comments associated with moderation of the list item.",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{ContentType}#Id": {
+                "title": "Content type Id",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-visibility": "internal"
+              },
+              "{ContentType}": {
+                "title": "Content type",
+                "description": "Name of the Content type of the item.",
+                "type": "object",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "none",
+                "properties": {
+                  "@odata.type": {
+                    "title": "@odata.type",
+                    "x-ms-visibility": "internal",
+                    "type": "string",
+                    "x-ms-permission": "read-write"
+                  },
+                  "Id": {
+                    "title": "Id",
+                    "type": "string",
+                    "x-ms-dynamic-values": {
+                      "operationId": "GetEntityValues",
+                      "parameters": {
+                        "dataset": {
+                          "parameter": "dataset"
+                        },
+                        "table": {
+                          "parameter": "table"
+                        },
+                        "id": "4651e8f2-38c9-4ad0-8def-41f743f76f30"
+                      },
+                      "value-path": "Id",
+                      "value-title": "Name",
+                      "value-collection": "value"
+                    }
+                  },
+                  "Name": {
+                    "title": "Name",
+                    "type": "string",
+                    "x-ms-permission": "read-only"
+                  }
+                },
+                "x-ms-displayFormat": {
+                  "titleProperty": "Name"
+                }
+              },
+              "{HasAttachments}": {
+                "title": "Has attachments",
+                "description": "Indicates the presence of attachments in the item.",
+                "type": "boolean",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{Attachments}@odata.type": {
+                "title": "{Attachments}",
+                "type": "string",
+                "x-ms-visibility": "internal",
+                "x-ms-permission": "read-write"
+              },
+              "{Attachments}": {
+                "title": "Attachments",
+                "description": "Never returns any data. Use Attachment endpoints to access item attachments.",
+                "x-ms-permission": "read-write",
+                "targetEntity": "attachments",
+                "format": "x-ms-containedMediaEntity",
+                "x-ms-visibility": "internal",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "format": "x-ms-mediaEntity",
+                  "x-ms-sort": "none",
+                  "properties": {
+                    "@odata.type": {
+                      "title": "@odata.type",
+                      "x-ms-visibility": "internal",
+                      "type": "string",
+                      "x-ms-permission": "read-write"
+                    },
+                    "Id": {
+                      "title": "Id",
+                      "type": "string",
+                      "x-ms-keyType": "primary",
+                      "x-ms-keyOrder": 1,
+                      "x-ms-permission": "read-only"
+                    },
+                    "AbsoluteUri": {
+                      "title": "AbsoluteUri",
+                      "type": "string",
+                      "format": "uri",
+                      "x-ms-permission": "read-only"
+                    },
+                    "DisplayName": {
+                      "title": "DisplayName",
+                      "type": "string",
+                      "x-ms-permission": "read-only"
+                    }
+                  }
+                },
+                "@odata.type": "#Collection(Microsoft.Azure.Connectors.SharePoint.SPListItemAttachment)"
+              },
+              "{VersionNumber}": {
+                "title": "Version number",
+                "description": "The version number of the file or the list item.",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{TriggerWindowStartToken}": {
+                "title": "Trigger Window Start Token",
+                "description": "A token expressing the time of the last flow check. Use this if you want to check if one or more columns were modified since the last flow check.",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{TriggerWindowEndToken}": {
+                "title": "Trigger Window End Token",
+                "description": "A token expressing the time of the current flow check. Use this if you want to check if one or more columns were modified since the last flow check.",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              }
+            },
+            "x-ms-relationships": {
+              "Author": {
+                "targetEntity": "Author",
+                "referentialConstraints": {
+                  "Author#Claims": {
+                    "referencedProperty": "Claims"
+                  }
+                }
+              },
+              "Editor": {
+                "targetEntity": "Editor",
+                "referentialConstraints": {
+                  "Editor#Claims": {
+                    "referencedProperty": "Claims"
+                  }
+                }
+              },
+              "{ContentType}": {
+                "targetEntity": "4651e8f2-38c9-4ad0-8def-41f743f76f30",
+                "referentialConstraints": {
+                  "{ContentType}#Id": {
+                    "referencedProperty": "Id"
+                  }
+                }
+              }
+            },
+            "x-ms-displayFormat": {
+              "propertiesDisplayOrder": [
+                "Title",
+                "RequestID",
+                "RecordID",
+                "ServiceDate",
+                "RequesterName",
+                "RequesterEmail",
+                "Department",
+                "Purpose",
+                "StartDate",
+                "EndDate",
+                "DurationHours",
+                "MealCategory",
+                "Quantity",
+                "AdditionalRequest",
+                "CurrentStatus",
+                "ApprovalTrigger",
+                "RequestCreatedAt",
+                "{Attachments}"
+              ],
+              "propertiesCompactDisplayOrder": [
+                "Title",
+                "RequestID",
+                "RecordID",
+                "ServiceDate",
+                "RequesterName",
+                "RequesterEmail",
+                "Department",
+                "Purpose",
+                "StartDate",
+                "EndDate",
+                "DurationHours",
+                "MealCategory",
+                "Quantity",
+                "AdditionalRequest",
+                "CurrentStatus",
+                "ApprovalTrigger",
+                "RequestCreatedAt"
+              ],
+              "propertiesTabularDisplayOrder": [
+                "Title",
+                "RequestID",
+                "RecordID",
+                "ServiceDate",
+                "RequesterName",
+                "RequesterEmail",
+                "Department",
+                "Purpose",
+                "StartDate",
+                "EndDate",
+                "DurationHours",
+                "MealCategory",
+                "Quantity",
+                "AdditionalRequest",
+                "CurrentStatus",
+                "ApprovalTrigger",
+                "RequestCreatedAt"
+              ]
+            }
+          }
+        },
+        "referencedEntities": {
+          "Author": {
+            "lookupEndpoint": {
+              "path": "/tables/83f8af7d-243b-44b1-87dd-30e7a3a3365e/entities/Author",
+              "capabilities": {
+                "searchable": true,
+                "requiresSearch": false
+              }
+            }
+          },
+          "Editor": {
+            "lookupEndpoint": {
+              "path": "/tables/83f8af7d-243b-44b1-87dd-30e7a3a3365e/entities/Editor",
+              "capabilities": {
+                "searchable": true,
+                "requiresSearch": false
+              }
+            }
+          },
+          "4651e8f2-38c9-4ad0-8def-41f743f76f30": {
+            "lookupEndpoint": {
+              "path": "/tables/83f8af7d-243b-44b1-87dd-30e7a3a3365e/entities/%257bContentType%257d",
+              "capabilities": {
+                "searchable": true,
+                "requiresSearch": false
+              }
+            }
+          }
+        },
+        "webUrl": "https://ineosgroup.sharepoint.com/sites/Aromatics/IAI/Lists/ExtraMealReq/AllItems.aspx"
+      },
+      "apiMetadataTableId": "83f8af7d-243b-44b1-87dd-30e7a3a3365e",
+      "apiDataTableId": "83f8af7d-243b-44b1-87dd-30e7a3a3365e",
+      "powerConfigData": {
+        "connectionReferences": {
+          "400133f4-cac9-4e2d-9610-4ee57df7e0a0": {
+            "id": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+            "displayName": "SharePoint",
+            "dataSources": [
+              "extramealreq"
+            ],
+            "authenticationType": null,
+            "sharedConnectionId": null,
+            "dataSets": {
+              "https%253A%252F%252Fineosgroup.sharepoint.com%252Fsites%252FAromatics%252FIAI": {
+                "dataSources": {
+                  "extramealreq": {
+                    "tableName": "83f8af7d-243b-44b1-87dd-30e7a3a3365e"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "typescriptModelInterfaceName": "ExtraMealReq",
+      "typescriptServiceClassName": "ExtraMealReqService",
+      "modelFileName": "extra-meal-req-model",
+      "serviceFileName": "extra-meal-req-service",
+      "hookFileName": "use-extra-meal-req",
+      "validatorFileName": "extra-meal-req-validator",
+      "columns": [
+        {
+          "displayName": "ID",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Counter"
+          },
+          "apiPropertyName": "ID",
+          "apiPropertyNameCaseSensitive": "ID",
+          "typescriptPropertyName": "id",
+          "isPrimaryName": false,
+          "isPrimaryId": true,
+          "type": "Integer",
+          "validationMetadata": {
+            "idValidationType": "string"
+          }
+        },
+        {
+          "displayName": "Title",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Text",
+            "maxLength": 255
+          },
+          "apiPropertyName": "Title",
+          "apiPropertyNameCaseSensitive": "Title",
+          "typescriptPropertyName": "title",
+          "isPrimaryName": true,
+          "isPrimaryId": false,
+          "type": "Text",
+          "validationMetadata": {
+            "maxLength": 255
+          }
+        },
+        {
+          "displayName": "AdditionalRequest",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Note"
+          },
+          "apiPropertyName": "AdditionalRequest",
+          "apiPropertyNameCaseSensitive": "AdditionalRequest",
+          "typescriptPropertyName": "additionalRequest",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "MultiLineTextArea",
+          "validationMetadata": {}
+        },
+        {
+          "displayName": "ApprovalTrigger",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Boolean"
+          },
+          "apiPropertyName": "ApprovalTrigger",
+          "apiPropertyNameCaseSensitive": "ApprovalTrigger",
+          "typescriptPropertyName": "approvalTrigger",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "Boolean",
+          "validationMetadata": {}
+        },
+        {
+          "displayName": "CurrentStatus",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Text",
+            "maxLength": 255
+          },
+          "apiPropertyName": "CurrentStatus",
+          "apiPropertyNameCaseSensitive": "CurrentStatus",
+          "typescriptPropertyName": "currentStatus",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "Text",
+          "validationMetadata": {
+            "maxLength": 255
+          }
+        },
+        {
+          "displayName": "Department",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Text",
+            "maxLength": 255
+          },
+          "apiPropertyName": "Department",
+          "apiPropertyNameCaseSensitive": "Department",
+          "typescriptPropertyName": "department",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "Text",
+          "validationMetadata": {
+            "maxLength": 255
+          }
+        },
+        {
+          "displayName": "DurationHours",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Number",
+            "typeHint": "int"
+          },
+          "apiPropertyName": "DurationHours",
+          "apiPropertyNameCaseSensitive": "DurationHours",
+          "typescriptPropertyName": "durationHours",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "Integer",
+          "validationMetadata": {}
+        },
+        {
+          "displayName": "EndDate",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "DateTime",
+            "description": "Date only format (YYYY-MM-DD). No time component."
+          },
+          "apiPropertyName": "EndDate",
+          "apiPropertyNameCaseSensitive": "EndDate",
+          "typescriptPropertyName": "endDate",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "DateOnly",
+          "validationMetadata": {
+            "dateRegex": {
+              "pattern": "/^\\d{4}-\\d{2}-\\d{2}$/",
+              "message": "Use YYYY-MM-DD"
+            }
+          }
+        },
+        {
+          "displayName": "MealCategory",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Text",
+            "maxLength": 255
+          },
+          "apiPropertyName": "MealCategory",
+          "apiPropertyNameCaseSensitive": "MealCategory",
+          "typescriptPropertyName": "mealCategory",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "Text",
+          "validationMetadata": {
+            "maxLength": 255
+          }
+        },
+        {
+          "displayName": "Purpose",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Note"
+          },
+          "apiPropertyName": "Purpose",
+          "apiPropertyNameCaseSensitive": "Purpose",
+          "typescriptPropertyName": "purpose",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "MultiLineTextArea",
+          "validationMetadata": {}
+        },
+        {
+          "displayName": "Quantity",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Number",
+            "typeHint": "int"
+          },
+          "apiPropertyName": "Quantity",
+          "apiPropertyNameCaseSensitive": "Quantity",
+          "typescriptPropertyName": "quantity",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "Integer",
+          "validationMetadata": {}
+        },
+        {
+          "displayName": "RecordID",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Text",
+            "maxLength": 255
+          },
+          "apiPropertyName": "RecordID",
+          "apiPropertyNameCaseSensitive": "RecordID",
+          "typescriptPropertyName": "recordID",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "Text",
+          "validationMetadata": {
+            "maxLength": 255
+          }
+        },
+        {
+          "displayName": "RequestCreatedAt",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "DateTime",
+            "description": "Date and time format (YYYY-MM-DDTHH:mm)."
+          },
+          "apiPropertyName": "RequestCreatedAt",
+          "apiPropertyNameCaseSensitive": "RequestCreatedAt",
+          "typescriptPropertyName": "requestCreatedAt",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "DateAndTime",
+          "validationMetadata": {
+            "dateRegex": {
+              "pattern": "/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}$/",
+              "message": "Use YYYY-MM-DDTHH:mm"
+            }
+          }
+        },
+        {
+          "displayName": "RequesterEmail",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Text",
+            "maxLength": 255
+          },
+          "apiPropertyName": "RequesterEmail",
+          "apiPropertyNameCaseSensitive": "RequesterEmail",
+          "typescriptPropertyName": "requesterEmail",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "Text",
+          "validationMetadata": {
+            "maxLength": 255
+          }
+        },
+        {
+          "displayName": "RequesterName",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Text",
+            "maxLength": 255
+          },
+          "apiPropertyName": "RequesterName",
+          "apiPropertyNameCaseSensitive": "RequesterName",
+          "typescriptPropertyName": "requesterName",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "Text",
+          "validationMetadata": {
+            "maxLength": 255
+          }
+        },
+        {
+          "displayName": "RequestID",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Text",
+            "maxLength": 255
+          },
+          "apiPropertyName": "RequestID",
+          "apiPropertyNameCaseSensitive": "RequestID",
+          "typescriptPropertyName": "requestID",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "Text",
+          "validationMetadata": {
+            "maxLength": 255
+          }
+        },
+        {
+          "displayName": "ServiceDate",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "DateTime",
+            "description": "Date only format (YYYY-MM-DD). No time component."
+          },
+          "apiPropertyName": "ServiceDate",
+          "apiPropertyNameCaseSensitive": "ServiceDate",
+          "typescriptPropertyName": "serviceDate",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "DateOnly",
+          "validationMetadata": {
+            "dateRegex": {
+              "pattern": "/^\\d{4}-\\d{2}-\\d{2}$/",
+              "message": "Use YYYY-MM-DD"
+            }
+          }
+        },
+        {
+          "displayName": "StartDate",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "DateTime",
+            "description": "Date only format (YYYY-MM-DD). No time component."
+          },
+          "apiPropertyName": "StartDate",
+          "apiPropertyNameCaseSensitive": "StartDate",
+          "typescriptPropertyName": "startDate",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "DateOnly",
+          "validationMetadata": {
+            "dateRegex": {
+              "pattern": "/^\\d{4}-\\d{2}-\\d{2}$/",
+              "message": "Use YYYY-MM-DD"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "dataSourceKey": "requestkendaraanapps",
+      "schemaFileName": "sharepoint/0f2a243f-c884-4d3f-951b-1c32f050043b.Schema",
+      "dataSourceType": "SharePoint",
+      "schema": {
+        "name": "0f2a243f-c884-4d3f-951b-1c32f050043b",
+        "title": "requestkendaraanapps",
+        "x-ms-permission": "read-write",
+        "x-ms-capabilities": {
+          "sortRestrictions": {
+            "sortable": true,
+            "unsortableProperties": [
+              "TujuanLainnyaDet",
+              "Keperluan",
+              "AdminNote",
+              "PlantDirectorNote",
+              "{Identifier}",
+              "{IsFolder}",
+              "{Link}",
+              "{Name}",
+              "{FilenameWithExtension}",
+              "{Path}",
+              "{FullPath}",
+              "{ModerationStatus}",
+              "{ModerationComment}",
+              "{ContentType}",
+              "{HasAttachments}",
+              "{Attachments}",
+              "{VersionNumber}",
+              "{TriggerWindowStartToken}",
+              "{TriggerWindowEndToken}"
+            ]
+          },
+          "filterRestrictions": {
+            "filterable": true,
+            "nonFilterableProperties": [
+              "TujuanLainnyaDet",
+              "Keperluan",
+              "AdminNote",
+              "PlantDirectorNote",
+              "{Identifier}",
+              "{IsFolder}",
+              "{Link}",
+              "{Name}",
+              "{FilenameWithExtension}",
+              "{Path}",
+              "{FullPath}",
+              "{ModerationStatus}",
+              "{ModerationComment}",
+              "{ContentType}",
+              "{HasAttachments}",
+              "{Attachments}",
+              "{VersionNumber}",
+              "{TriggerWindowStartToken}",
+              "{TriggerWindowEndToken}"
+            ]
+          },
+          "isOnlyServerPagable": true,
+          "filterFunctionSupport": [
+            "and",
+            "or",
+            "eq",
+            "startswith",
+            "gt",
+            "ge",
+            "lt",
+            "le",
+            "ne"
+          ],
+          "serverPagingOptions": [
+            "top",
+            "skiptoken"
+          ],
+          "odataVersion": 3
+        },
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [],
+            "properties": {
+              "ID": {
+                "title": "ID",
+                "description": "List item id. Use this value for specifying the item to act on in other list related actions.",
+                "type": "integer",
+                "format": "int64",
+                "x-ms-keyType": "primary",
+                "x-ms-keyOrder": 1,
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq"
+                  ]
+                }
+              },
+              "Title": {
+                "title": "Title",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "maxLength": 255
+              },
+              "NamaPemohon": {
+                "title": "NamaPemohon",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "maxLength": 255
+              },
+              "EmailPemohon": {
+                "title": "EmailPemohon",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "maxLength": 255
+              },
+              "Departemen": {
+                "title": "Departemen",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "maxLength": 255
+              },
+              "Tanggal": {
+                "title": "Tanggal",
+                "type": "string",
+                "format": "date",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "gt",
+                    "ge",
+                    "lt",
+                    "le",
+                    "ne"
+                  ]
+                }
+              },
+              "Jam": {
+                "title": "Jam",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "maxLength": 255
+              },
+              "Tujuan": {
+                "title": "Tujuan",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "maxLength": 255
+              },
+              "TujuanLainnyaDet": {
+                "title": "TujuanLainnyaDet",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "none"
+              },
+              "Keperluan": {
+                "title": "Keperluan",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "none"
+              },
+              "JumlahPenumpang": {
+                "title": "JumlahPenumpang",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "maxLength": 255
+              },
+              "TitikJemput": {
+                "title": "TitikJemput",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "maxLength": 255
+              },
+              "CurrentStatus": {
+                "title": "CurrentStatus",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "maxLength": 255
+              },
+              "AdminDecision": {
+                "title": "AdminDecision",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "maxLength": 255
+              },
+              "AdminNote": {
+                "title": "AdminNote",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "none"
+              },
+              "PlantDirectorDecision": {
+                "title": "PlantDirectorDecision",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "maxLength": 255
+              },
+              "PlantDirectorNote": {
+                "title": "PlantDirectorNote",
+                "type": "string",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "none"
+              },
+              "RequesterManager#Claims": {
+                "title": "RequesterManager Claims",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-visibility": "internal"
+              },
+              "RequesterManager": {
+                "title": "RequesterManager",
+                "type": "object",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq"
+                  ]
+                },
+                "properties": {
+                  "@odata.type": {
+                    "title": "@odata.type",
+                    "x-ms-visibility": "internal",
+                    "type": "string",
+                    "x-ms-permission": "read-write"
+                  },
+                  "Claims": {
+                    "title": "Claims",
+                    "type": "string",
+                    "x-ms-dynamic-values": {
+                      "operationId": "GetEntityValues",
+                      "parameters": {
+                        "dataset": {
+                          "parameter": "dataset"
+                        },
+                        "table": {
+                          "parameter": "table"
+                        },
+                        "id": "0ec163a8-f582-4feb-8e77-7017ab0d7691"
+                      },
+                      "value-path": "Claims",
+                      "value-title": "DisplayName",
+                      "value-collection": "value"
+                    }
+                  },
+                  "DisplayName": {
+                    "title": "DisplayName",
+                    "type": "string",
+                    "x-ms-permission": "read-only",
+                    "x-ms-capabilities": {
+                      "x-ms-sp": {
+                        "OdataQueryName": "Title"
+                      },
+                      "filterFunctions": [
+                        "eq",
+                        "startswith"
+                      ]
+                    }
+                  },
+                  "Email": {
+                    "title": "Email",
+                    "type": "string",
+                    "format": "email",
+                    "x-ms-permission": "read-only",
+                    "x-ms-capabilities": {
+                      "x-ms-sp": {
+                        "OdataQueryName": "EMail"
+                      },
+                      "filterFunctions": [
+                        "eq",
+                        "startswith"
+                      ]
+                    }
+                  },
+                  "Picture": {
+                    "title": "Picture",
+                    "type": "string",
+                    "format": "uri",
+                    "x-ms-media-kind": "image",
+                    "x-ms-media-default-folder-path": "/sites/Aromatics/IAI",
+                    "x-ms-media-base-url": "https://ineosgroup.sharepoint.com/sites/Aromatics/IAI",
+                    "x-ms-permission": "read-only"
+                  },
+                  "Department": {
+                    "title": "Department",
+                    "type": "string",
+                    "x-ms-permission": "read-only"
+                  },
+                  "JobTitle": {
+                    "title": "JobTitle",
+                    "type": "string",
+                    "x-ms-permission": "read-only"
+                  }
+                },
+                "x-ms-displayFormat": {
+                  "titleProperty": "DisplayName",
+                  "subtitleProperty": "Email",
+                  "thumbnailProperty": "Picture"
+                }
+              },
+              "CreatedDate": {
+                "title": "CreatedDate",
+                "type": "string",
+                "format": "date",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "gt",
+                    "ge",
+                    "lt",
+                    "le",
+                    "ne"
+                  ]
+                }
+              },
+              "LastUpdate": {
+                "title": "LastUpdate",
+                "type": "string",
+                "format": "date",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "gt",
+                    "ge",
+                    "lt",
+                    "le",
+                    "ne"
+                  ]
+                }
+              },
+              "OData__ColorTag": {
+                "title": "Color Tag",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "maxLength": 255
+              },
+              "ComplianceAssetId": {
+                "title": "Compliance Asset Id",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "startswith"
+                  ]
+                },
+                "maxLength": 255
+              },
+              "Modified": {
+                "title": "Modified",
+                "description": "When this item was last changed.",
+                "type": "string",
+                "format": "date-time",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "gt",
+                    "ge",
+                    "lt",
+                    "le",
+                    "ne"
+                  ]
+                }
+              },
+              "Created": {
+                "title": "Created",
+                "description": "When this item was created.",
+                "type": "string",
+                "format": "date-time",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq",
+                    "gt",
+                    "ge",
+                    "lt",
+                    "le",
+                    "ne"
+                  ]
+                }
+              },
+              "Author#Claims": {
+                "title": "Created By Claims",
+                "type": "string",
+                "description": "Internal identifier for the user who created this item.",
+                "x-ms-permission": "read-only",
+                "x-ms-visibility": "internal"
+              },
+              "Author": {
+                "title": "Created By",
+                "description": "The user who created this item.",
+                "type": "object",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq"
+                  ]
+                },
+                "properties": {
+                  "@odata.type": {
+                    "title": "@odata.type",
+                    "x-ms-visibility": "internal",
+                    "type": "string",
+                    "x-ms-permission": "read-only"
+                  },
+                  "Claims": {
+                    "title": "Claims",
+                    "type": "string",
+                    "description": "Internal identifier for the user who created this item.",
+                    "x-ms-permission": "read-only",
+                    "x-ms-dynamic-values": {
+                      "operationId": "GetEntityValues",
+                      "parameters": {
+                        "dataset": {
+                          "parameter": "dataset"
+                        },
+                        "table": {
+                          "parameter": "table"
+                        },
+                        "id": "1df5e554-ec7e-46a6-901d-d85a3881cb18"
+                      },
+                      "value-path": "Claims",
+                      "value-title": "DisplayName",
+                      "value-collection": "value"
+                    }
+                  },
+                  "DisplayName": {
+                    "title": "DisplayName",
+                    "type": "string",
+                    "description": "The name of the user who created this item.",
+                    "x-ms-permission": "read-only",
+                    "x-ms-capabilities": {
+                      "x-ms-sp": {
+                        "OdataQueryName": "Title"
+                      },
+                      "filterFunctions": [
+                        "eq",
+                        "startswith"
+                      ]
+                    }
+                  },
+                  "Email": {
+                    "title": "Email",
+                    "type": "string",
+                    "description": "Email address of the user who created this item.",
+                    "format": "email",
+                    "x-ms-permission": "read-only",
+                    "x-ms-capabilities": {
+                      "x-ms-sp": {
+                        "OdataQueryName": "EMail"
+                      },
+                      "filterFunctions": [
+                        "eq",
+                        "startswith"
+                      ]
+                    }
+                  },
+                  "Picture": {
+                    "title": "Picture",
+                    "type": "string",
+                    "description": "Link to a picture of the user who created this item.",
+                    "format": "uri",
+                    "x-ms-media-kind": "image",
+                    "x-ms-media-default-folder-path": "/sites/Aromatics/IAI",
+                    "x-ms-media-base-url": "https://ineosgroup.sharepoint.com/sites/Aromatics/IAI",
+                    "x-ms-permission": "read-only"
+                  },
+                  "Department": {
+                    "title": "Department",
+                    "type": "string",
+                    "description": "Department name of the user who created this item.",
+                    "x-ms-permission": "read-only"
+                  },
+                  "JobTitle": {
+                    "title": "JobTitle",
+                    "type": "string",
+                    "description": "Job title of the user who created this item.",
+                    "x-ms-permission": "read-only"
+                  }
+                },
+                "x-ms-displayFormat": {
+                  "titleProperty": "DisplayName",
+                  "subtitleProperty": "Email",
+                  "thumbnailProperty": "Picture"
+                }
+              },
+              "Editor#Claims": {
+                "title": "Modified By Claims",
+                "type": "string",
+                "description": "Internal identifier for the user who last changed this item.",
+                "x-ms-permission": "read-only",
+                "x-ms-visibility": "internal"
+              },
+              "Editor": {
+                "title": "Modified By",
+                "description": "The user who last changed this item.",
+                "type": "object",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "asc,desc",
+                "x-ms-capabilities": {
+                  "filterFunctions": [
+                    "eq"
+                  ]
+                },
+                "properties": {
+                  "@odata.type": {
+                    "title": "@odata.type",
+                    "x-ms-visibility": "internal",
+                    "type": "string",
+                    "x-ms-permission": "read-only"
+                  },
+                  "Claims": {
+                    "title": "Claims",
+                    "type": "string",
+                    "description": "Internal identifier for the user who last changed this item.",
+                    "x-ms-permission": "read-only",
+                    "x-ms-dynamic-values": {
+                      "operationId": "GetEntityValues",
+                      "parameters": {
+                        "dataset": {
+                          "parameter": "dataset"
+                        },
+                        "table": {
+                          "parameter": "table"
+                        },
+                        "id": "d31655d1-1d5b-4511-95a1-7a09e9b75bf2"
+                      },
+                      "value-path": "Claims",
+                      "value-title": "DisplayName",
+                      "value-collection": "value"
+                    }
+                  },
+                  "DisplayName": {
+                    "title": "DisplayName",
+                    "type": "string",
+                    "description": "The name of the user who last changed this item.",
+                    "x-ms-permission": "read-only",
+                    "x-ms-capabilities": {
+                      "x-ms-sp": {
+                        "OdataQueryName": "Title"
+                      },
+                      "filterFunctions": [
+                        "eq",
+                        "startswith"
+                      ]
+                    }
+                  },
+                  "Email": {
+                    "title": "Email",
+                    "type": "string",
+                    "description": "Email address of the user who last changed this item.",
+                    "format": "email",
+                    "x-ms-permission": "read-only",
+                    "x-ms-capabilities": {
+                      "x-ms-sp": {
+                        "OdataQueryName": "EMail"
+                      },
+                      "filterFunctions": [
+                        "eq",
+                        "startswith"
+                      ]
+                    }
+                  },
+                  "Picture": {
+                    "title": "Picture",
+                    "type": "string",
+                    "description": "Link to a picture of the user who last changed this item.",
+                    "format": "uri",
+                    "x-ms-media-kind": "image",
+                    "x-ms-media-default-folder-path": "/sites/Aromatics/IAI",
+                    "x-ms-media-base-url": "https://ineosgroup.sharepoint.com/sites/Aromatics/IAI",
+                    "x-ms-permission": "read-only"
+                  },
+                  "Department": {
+                    "title": "Department",
+                    "type": "string",
+                    "description": "Department name of the user who last changed this item.",
+                    "x-ms-permission": "read-only"
+                  },
+                  "JobTitle": {
+                    "title": "JobTitle",
+                    "type": "string",
+                    "description": "Job title of the user who last changed this item.",
+                    "x-ms-permission": "read-only"
+                  }
+                },
+                "x-ms-displayFormat": {
+                  "titleProperty": "DisplayName",
+                  "subtitleProperty": "Email",
+                  "thumbnailProperty": "Picture"
+                }
+              },
+              "{Identifier}": {
+                "title": "Identifier",
+                "description": "Value that can be used in file related actions for selecting a file.",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{IsFolder}": {
+                "title": "Is folder",
+                "description": "True when the item is a folder, false otherwise.",
+                "type": "boolean",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{Link}": {
+                "title": "Link to item",
+                "description": "Link that can be used to get to the file or list item. Only people with permissions to the item will be able to open the link.",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{Name}": {
+                "title": "Name",
+                "description": "File name of the item in document libraries, display name of the item in lists.",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{FilenameWithExtension}": {
+                "title": "File name with extension",
+                "description": "For libraries, returns file name including extension. For lists, returns the title property.",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{Path}": {
+                "title": "Folder path",
+                "description": "Path to the folder the item is in, relative to the site address.",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{FullPath}": {
+                "title": "Full Path",
+                "description": "Full path of an item or a folder or a file",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{ModerationStatus}": {
+                "title": "Content approval status",
+                "description": "The content approval status. It can be one of the following: Draft, Pending, Approved, or Rejected",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{ModerationComment}": {
+                "title": "Comments associated with the content approval of this list item",
+                "description": "The comments associated with moderation of the list item.",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{ContentType}#Id": {
+                "title": "Content type Id",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-visibility": "internal"
+              },
+              "{ContentType}": {
+                "title": "Content type",
+                "description": "Name of the Content type of the item.",
+                "type": "object",
+                "x-ms-permission": "read-write",
+                "x-ms-sort": "none",
+                "properties": {
+                  "@odata.type": {
+                    "title": "@odata.type",
+                    "x-ms-visibility": "internal",
+                    "type": "string",
+                    "x-ms-permission": "read-write"
+                  },
+                  "Id": {
+                    "title": "Id",
+                    "type": "string",
+                    "x-ms-dynamic-values": {
+                      "operationId": "GetEntityValues",
+                      "parameters": {
+                        "dataset": {
+                          "parameter": "dataset"
+                        },
+                        "table": {
+                          "parameter": "table"
+                        },
+                        "id": "4651e8f2-38c9-4ad0-8def-41f743f76f30"
+                      },
+                      "value-path": "Id",
+                      "value-title": "Name",
+                      "value-collection": "value"
+                    }
+                  },
+                  "Name": {
+                    "title": "Name",
+                    "type": "string",
+                    "x-ms-permission": "read-only"
+                  }
+                },
+                "x-ms-displayFormat": {
+                  "titleProperty": "Name"
+                }
+              },
+              "{HasAttachments}": {
+                "title": "Has attachments",
+                "description": "Indicates the presence of attachments in the item.",
+                "type": "boolean",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{Attachments}@odata.type": {
+                "title": "{Attachments}",
+                "type": "string",
+                "x-ms-visibility": "internal",
+                "x-ms-permission": "read-write"
+              },
+              "{Attachments}": {
+                "title": "Attachments",
+                "description": "Never returns any data. Use Attachment endpoints to access item attachments.",
+                "x-ms-permission": "read-write",
+                "targetEntity": "attachments",
+                "format": "x-ms-containedMediaEntity",
+                "x-ms-visibility": "internal",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "format": "x-ms-mediaEntity",
+                  "x-ms-sort": "none",
+                  "properties": {
+                    "@odata.type": {
+                      "title": "@odata.type",
+                      "x-ms-visibility": "internal",
+                      "type": "string",
+                      "x-ms-permission": "read-write"
+                    },
+                    "Id": {
+                      "title": "Id",
+                      "type": "string",
+                      "x-ms-keyType": "primary",
+                      "x-ms-keyOrder": 1,
+                      "x-ms-permission": "read-only"
+                    },
+                    "AbsoluteUri": {
+                      "title": "AbsoluteUri",
+                      "type": "string",
+                      "format": "uri",
+                      "x-ms-permission": "read-only"
+                    },
+                    "DisplayName": {
+                      "title": "DisplayName",
+                      "type": "string",
+                      "x-ms-permission": "read-only"
+                    }
+                  }
+                },
+                "@odata.type": "#Collection(Microsoft.Azure.Connectors.SharePoint.SPListItemAttachment)"
+              },
+              "{VersionNumber}": {
+                "title": "Version number",
+                "description": "The version number of the file or the list item.",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{TriggerWindowStartToken}": {
+                "title": "Trigger Window Start Token",
+                "description": "A token expressing the time of the last flow check. Use this if you want to check if one or more columns were modified since the last flow check.",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              },
+              "{TriggerWindowEndToken}": {
+                "title": "Trigger Window End Token",
+                "description": "A token expressing the time of the current flow check. Use this if you want to check if one or more columns were modified since the last flow check.",
+                "type": "string",
+                "x-ms-permission": "read-only",
+                "x-ms-sort": "none"
+              }
+            },
+            "x-ms-relationships": {
+              "RequesterManager": {
+                "targetEntity": "RequesterManager",
+                "referentialConstraints": {
+                  "RequesterManager#Claims": {
+                    "referencedProperty": "Claims"
+                  }
+                }
+              },
+              "Author": {
+                "targetEntity": "Author",
+                "referentialConstraints": {
+                  "Author#Claims": {
+                    "referencedProperty": "Claims"
+                  }
+                }
+              },
+              "Editor": {
+                "targetEntity": "Editor",
+                "referentialConstraints": {
+                  "Editor#Claims": {
+                    "referencedProperty": "Claims"
+                  }
+                }
+              },
+              "{ContentType}": {
+                "targetEntity": "4651e8f2-38c9-4ad0-8def-41f743f76f30",
+                "referentialConstraints": {
+                  "{ContentType}#Id": {
+                    "referencedProperty": "Id"
+                  }
+                }
+              }
+            },
+            "x-ms-displayFormat": {
+              "propertiesDisplayOrder": [
+                "Title",
+                "NamaPemohon",
+                "EmailPemohon",
+                "Departemen",
+                "Tanggal",
+                "Jam",
+                "Tujuan",
+                "TujuanLainnyaDet",
+                "Keperluan",
+                "JumlahPenumpang",
+                "TitikJemput",
+                "CurrentStatus",
+                "AdminDecision",
+                "AdminNote",
+                "PlantDirectorDecision",
+                "PlantDirectorNote",
+                "RequesterManager",
+                "CreatedDate",
+                "LastUpdate",
+                "{Attachments}"
+              ],
+              "propertiesCompactDisplayOrder": [
+                "Title",
+                "NamaPemohon",
+                "EmailPemohon",
+                "Departemen",
+                "Tanggal",
+                "Jam",
+                "Tujuan",
+                "TujuanLainnyaDet",
+                "Keperluan",
+                "JumlahPenumpang",
+                "TitikJemput",
+                "CurrentStatus",
+                "AdminDecision",
+                "AdminNote",
+                "PlantDirectorDecision",
+                "PlantDirectorNote",
+                "RequesterManager",
+                "CreatedDate",
+                "LastUpdate"
+              ],
+              "propertiesTabularDisplayOrder": [
+                "Title",
+                "NamaPemohon",
+                "EmailPemohon",
+                "Departemen",
+                "Tanggal",
+                "Jam",
+                "Tujuan",
+                "TujuanLainnyaDet",
+                "Keperluan",
+                "JumlahPenumpang",
+                "TitikJemput",
+                "CurrentStatus",
+                "AdminDecision",
+                "AdminNote",
+                "PlantDirectorDecision",
+                "PlantDirectorNote",
+                "RequesterManager",
+                "CreatedDate",
+                "LastUpdate"
+              ]
+            }
+          }
+        },
+        "referencedEntities": {
+          "RequesterManager": {
+            "lookupEndpoint": {
+              "path": "/tables/0f2a243f-c884-4d3f-951b-1c32f050043b/entities/RequesterManager",
+              "capabilities": {
+                "searchable": true,
+                "requiresSearch": false
+              }
+            }
+          },
+          "Author": {
+            "lookupEndpoint": {
+              "path": "/tables/0f2a243f-c884-4d3f-951b-1c32f050043b/entities/Author",
+              "capabilities": {
+                "searchable": true,
+                "requiresSearch": false
+              }
+            }
+          },
+          "Editor": {
+            "lookupEndpoint": {
+              "path": "/tables/0f2a243f-c884-4d3f-951b-1c32f050043b/entities/Editor",
+              "capabilities": {
+                "searchable": true,
+                "requiresSearch": false
+              }
+            }
+          },
+          "4651e8f2-38c9-4ad0-8def-41f743f76f30": {
+            "lookupEndpoint": {
+              "path": "/tables/0f2a243f-c884-4d3f-951b-1c32f050043b/entities/%257bContentType%257d",
+              "capabilities": {
+                "searchable": true,
+                "requiresSearch": false
+              }
+            }
+          }
+        },
+        "webUrl": "https://ineosgroup.sharepoint.com/sites/Aromatics/IAI/Lists/RequestKendaraanApps/AllItems.aspx"
+      },
+      "apiMetadataTableId": "0f2a243f-c884-4d3f-951b-1c32f050043b",
+      "apiDataTableId": "0f2a243f-c884-4d3f-951b-1c32f050043b",
+      "powerConfigData": {
+        "connectionReferences": {
+          "400133f4-cac9-4e2d-9610-4ee57df7e0a0": {
+            "id": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+            "displayName": "SharePoint",
+            "dataSources": [
+              "requestkendaraanapps"
+            ],
+            "authenticationType": null,
+            "sharedConnectionId": null,
+            "dataSets": {
+              "https%253A%252F%252Fineosgroup.sharepoint.com%252Fsites%252FAromatics%252FIAI": {
+                "dataSources": {
+                  "requestkendaraanapps": {
+                    "tableName": "0f2a243f-c884-4d3f-951b-1c32f050043b"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "typescriptModelInterfaceName": "RequestKendaraanApps",
+      "typescriptServiceClassName": "RequestKendaraanAppsService",
+      "modelFileName": "request-kendaraan-apps-model",
+      "serviceFileName": "request-kendaraan-apps-service",
+      "hookFileName": "use-request-kendaraan-apps",
+      "validatorFileName": "request-kendaraan-apps-validator",
+      "columns": [
+        {
+          "displayName": "ID",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Counter"
+          },
+          "apiPropertyName": "ID",
+          "apiPropertyNameCaseSensitive": "ID",
+          "typescriptPropertyName": "id",
+          "isPrimaryName": false,
+          "isPrimaryId": true,
+          "type": "Integer",
+          "validationMetadata": {
+            "idValidationType": "string"
+          }
+        },
+        {
+          "displayName": "Title",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Text",
+            "maxLength": 255
+          },
+          "apiPropertyName": "Title",
+          "apiPropertyNameCaseSensitive": "Title",
+          "typescriptPropertyName": "title",
+          "isPrimaryName": true,
+          "isPrimaryId": false,
+          "type": "Text",
+          "validationMetadata": {
+            "maxLength": 255
+          }
+        },
+        {
+          "displayName": "AdminDecision",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Text",
+            "maxLength": 255
+          },
+          "apiPropertyName": "AdminDecision",
+          "apiPropertyNameCaseSensitive": "AdminDecision",
+          "typescriptPropertyName": "adminDecision",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "Text",
+          "validationMetadata": {
+            "maxLength": 255
+          }
+        },
+        {
+          "displayName": "AdminNote",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Note"
+          },
+          "apiPropertyName": "AdminNote",
+          "apiPropertyNameCaseSensitive": "AdminNote",
+          "typescriptPropertyName": "adminNote",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "MultiLineTextArea",
+          "validationMetadata": {}
+        },
+        {
+          "displayName": "CreatedDate",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "DateTime",
+            "description": "Date only format (YYYY-MM-DD). No time component."
+          },
+          "apiPropertyName": "CreatedDate",
+          "apiPropertyNameCaseSensitive": "CreatedDate",
+          "typescriptPropertyName": "createdDate",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "DateOnly",
+          "validationMetadata": {
+            "dateRegex": {
+              "pattern": "/^\\d{4}-\\d{2}-\\d{2}$/",
+              "message": "Use YYYY-MM-DD"
+            }
+          }
+        },
+        {
+          "displayName": "CurrentStatus",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Text",
+            "maxLength": 255
+          },
+          "apiPropertyName": "CurrentStatus",
+          "apiPropertyNameCaseSensitive": "CurrentStatus",
+          "typescriptPropertyName": "currentStatus",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "Text",
+          "validationMetadata": {
+            "maxLength": 255
+          }
+        },
+        {
+          "displayName": "Departemen",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Text",
+            "maxLength": 255
+          },
+          "apiPropertyName": "Departemen",
+          "apiPropertyNameCaseSensitive": "Departemen",
+          "typescriptPropertyName": "departemen",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "Text",
+          "validationMetadata": {
+            "maxLength": 255
+          }
+        },
+        {
+          "displayName": "EmailPemohon",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Text",
+            "maxLength": 255
+          },
+          "apiPropertyName": "EmailPemohon",
+          "apiPropertyNameCaseSensitive": "EmailPemohon",
+          "typescriptPropertyName": "emailPemohon",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "Text",
+          "validationMetadata": {
+            "maxLength": 255
+          }
+        },
+        {
+          "displayName": "Jam",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Text",
+            "maxLength": 255
+          },
+          "apiPropertyName": "Jam",
+          "apiPropertyNameCaseSensitive": "Jam",
+          "typescriptPropertyName": "jam",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "Text",
+          "validationMetadata": {
+            "maxLength": 255
+          }
+        },
+        {
+          "displayName": "JumlahPenumpang",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Text",
+            "maxLength": 255
+          },
+          "apiPropertyName": "JumlahPenumpang",
+          "apiPropertyNameCaseSensitive": "JumlahPenumpang",
+          "typescriptPropertyName": "jumlahPenumpang",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "Text",
+          "validationMetadata": {
+            "maxLength": 255
+          }
+        },
+        {
+          "displayName": "Keperluan",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Note"
+          },
+          "apiPropertyName": "Keperluan",
+          "apiPropertyNameCaseSensitive": "Keperluan",
+          "typescriptPropertyName": "keperluan",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "MultiLineTextArea",
+          "validationMetadata": {}
+        },
+        {
+          "displayName": "LastUpdate",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "DateTime",
+            "description": "Date only format (YYYY-MM-DD). No time component."
+          },
+          "apiPropertyName": "LastUpdate",
+          "apiPropertyNameCaseSensitive": "LastUpdate",
+          "typescriptPropertyName": "lastUpdate",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "DateOnly",
+          "validationMetadata": {
+            "dateRegex": {
+              "pattern": "/^\\d{4}-\\d{2}-\\d{2}$/",
+              "message": "Use YYYY-MM-DD"
+            }
+          }
+        },
+        {
+          "displayName": "NamaPemohon",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Text",
+            "maxLength": 255
+          },
+          "apiPropertyName": "NamaPemohon",
+          "apiPropertyNameCaseSensitive": "NamaPemohon",
+          "typescriptPropertyName": "namaPemohon",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "Text",
+          "validationMetadata": {
+            "maxLength": 255
+          }
+        },
+        {
+          "displayName": "PlantDirectorDecision",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Text",
+            "maxLength": 255
+          },
+          "apiPropertyName": "PlantDirectorDecision",
+          "apiPropertyNameCaseSensitive": "PlantDirectorDecision",
+          "typescriptPropertyName": "plantDirectorDecision",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "Text",
+          "validationMetadata": {
+            "maxLength": 255
+          }
+        },
+        {
+          "displayName": "PlantDirectorNote",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Note"
+          },
+          "apiPropertyName": "PlantDirectorNote",
+          "apiPropertyNameCaseSensitive": "PlantDirectorNote",
+          "typescriptPropertyName": "plantDirectorNote",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "MultiLineTextArea",
+          "validationMetadata": {}
+        },
+        {
+          "displayName": "Tanggal",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "DateTime",
+            "description": "Date only format (YYYY-MM-DD). No time component."
+          },
+          "apiPropertyName": "Tanggal",
+          "apiPropertyNameCaseSensitive": "Tanggal",
+          "typescriptPropertyName": "tanggal",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "DateOnly",
+          "validationMetadata": {
+            "dateRegex": {
+              "pattern": "/^\\d{4}-\\d{2}-\\d{2}$/",
+              "message": "Use YYYY-MM-DD"
+            }
+          }
+        },
+        {
+          "displayName": "TitikJemput",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Text",
+            "maxLength": 255
+          },
+          "apiPropertyName": "TitikJemput",
+          "apiPropertyNameCaseSensitive": "TitikJemput",
+          "typescriptPropertyName": "titikJemput",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "Text",
+          "validationMetadata": {
+            "maxLength": 255
+          }
+        },
+        {
+          "displayName": "Tujuan",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Text",
+            "maxLength": 255
+          },
+          "apiPropertyName": "Tujuan",
+          "apiPropertyNameCaseSensitive": "Tujuan",
+          "typescriptPropertyName": "tujuan",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "Text",
+          "validationMetadata": {
+            "maxLength": 255
+          }
+        },
+        {
+          "displayName": "TujuanLainnyaDet",
+          "isRequired": false,
+          "propertyJsDocs": {
+            "format": "Note"
+          },
+          "apiPropertyName": "TujuanLainnyaDet",
+          "apiPropertyNameCaseSensitive": "TujuanLainnyaDet",
+          "typescriptPropertyName": "tujuanLainnyaDet",
+          "isPrimaryName": false,
+          "isPrimaryId": false,
+          "type": "MultiLineTextArea",
+          "validationMetadata": {}
+        }
+      ]
+    }
+  ],
+  "updateInProgress": false,
+  "dataModel": {
+    "tables": [
+      {
+        "id": "cr7d6_adminacess",
+        "dataSourceType": "SharePoint",
+        "displayName": "AdminAcess",
+        "fields": [],
+        "primaryIdFieldId": "cr7d6_adminacessid",
+        "connectionInfo": {
+          "PrimaryRuntimeUrl": "https://10de4cbb-9af0-ef35-9c13-fcfb5faa7812.16.common.usa002.azure-apihub.net/apim/sharepointonline",
+          "ConnectionId": "shared-sharepointonl-400133f4-cac9-4e2d-9610-4ee57df7e0a0",
+          "ConnectorId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+          "DatasetValue": "https://ineosgroup.sharepoint.com/sites/Aromatics/IAI",
+          "TableId": "dbf444f1-6d7c-482f-bb3c-0df022feb325"
+        }
+      },
+      {
+        "id": "cr7d6_extramealreq",
+        "dataSourceType": "SharePoint",
+        "displayName": "ExtraMealReq",
+        "fields": [],
+        "primaryIdFieldId": "cr7d6_extramealreqid",
+        "connectionInfo": {
+          "PrimaryRuntimeUrl": "https://10de4cbb-9af0-ef35-9c13-fcfb5faa7812.16.common.usa002.azure-apihub.net/apim/sharepointonline",
+          "ConnectionId": "shared-sharepointonl-400133f4-cac9-4e2d-9610-4ee57df7e0a0",
+          "ConnectorId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+          "DatasetValue": "https://ineosgroup.sharepoint.com/sites/Aromatics/IAI",
+          "TableId": "83f8af7d-243b-44b1-87dd-30e7a3a3365e"
+        }
+      },
+      {
+        "id": "cr7d6_requestkendaraan",
+        "dataSourceType": "SharePoint",
+        "displayName": "RequestKendaraan",
+        "fields": [],
+        "primaryIdFieldId": "cr7d6_requestkendaraanid",
+        "connectionInfo": {
+          "PrimaryRuntimeUrl": "https://10de4cbb-9af0-ef35-9c13-fcfb5faa7812.16.common.usa002.azure-apihub.net/apim/sharepointonline",
+          "ConnectionId": "shared-sharepointonl-400133f4-cac9-4e2d-9610-4ee57df7e0a0",
+          "ConnectorId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+          "DatasetValue": "https://ineosgroup.sharepoint.com/sites/Aromatics/IAI",
+          "TableId": "0116186b-3f6b-4431-bde5-d092cd0df898"
+        }
+      },
+      {
+        "id": "cr7d6_requestkendaraanapps",
+        "dataSourceType": "SharePoint",
+        "displayName": "RequestKendaraanApps",
+        "fields": [
+          {
+            "id": "cr7d6_newcolumn",
+            "name": "New column",
+            "type": "Text",
+            "required": true
+          }
+        ],
+        "primaryIdFieldId": "cr7d6_requestkendaraanappsid",
+        "connectionInfo": {
+          "ConnectionId": "shared-sharepointonl-400133f4-cac9-4e2d-9610-4ee57df7e0a0",
+          "ConnectorId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+          "DatasetValue": "https://ineosgroup.sharepoint.com/sites/Aromatics/IAI",
+          "TableId": "0f2a243f-c884-4d3f-951b-1c32f050043b",
+          "PrimaryRuntimeUrl": "https://10de4cbb-9af0-ef35-9c13-fcfb5faa7812.16.common.usa002.azure-apihub.net/apim/sharepointonline"
+        }
+      }
+    ]
+  },
+  "useLocalData": false,
+  "enableInMemoryDataAtRuntime": true
+}
