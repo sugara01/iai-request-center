@@ -14,7 +14,7 @@ const vehicleSteps: GuideStep[] = [
   { title: 'Tentukan jadwal penjemputan', summary: 'Pilih tanggal melalui kalender, lalu tentukan jam dan menit penjemputan.', fields: ['Tanggal Jemput', 'Jam Jemput (format 24 jam)'], tip: 'Pastikan tanggal dan jam sudah sesuai kebutuhan operasional sebelum melanjutkan.', icon: CalendarDays },
   { title: 'Isi rute perjalanan', summary: 'Tuliskan titik jemput dan pilih tujuan perjalanan.', fields: ['Titik jemput', 'Tujuan: Merak - Jakarta (HO), Jakarta - Merak, atau Lainnya'], tip: 'Jika memilih Lainnya, kolom Detail Tujuan lainnya wajib diisi dengan lokasi lengkap.', icon: MapPin },
   { title: 'Lengkapi kebutuhan perjalanan', summary: 'Pilih departemen, isi jumlah penumpang, dan jelaskan keperluan perjalanan.', fields: ['Departemen', 'Jumlah penumpang', 'Keperluan', 'Catatan (opsional)'], tip: 'Jumlah penumpang minimal 1. Gunakan Catatan untuk informasi bagasi atau kebutuhan khusus.', icon: Users },
-  { title: 'Periksa dan kirim', summary: 'Klik Tinjau & submit, periksa ringkasan, lalu simpan request.', fields: ['Periksa nama dan email', 'Periksa jadwal, rute, dan jumlah penumpang', 'Klik Ya, simpan request'], tip: 'Setelah tersimpan, request berstatus Submitted dan proses berikutnya ditangani Power Automate.', icon: ClipboardCheck },
+  { title: 'Periksa dan kirim', summary: 'Klik Tinjau & submit, periksa ringkasan, lalu simpan request.', fields: ['Periksa nama dan email', 'Periksa jadwal, rute, dan jumlah penumpang', 'Klik Ya, simpan request'], tip: 'Setelah tersimpan, request berstatus Submitted dan approval diproses oleh admin melalui aplikasi.', icon: ClipboardCheck },
 ];
 
 const mealSteps: GuideStep[] = [
@@ -26,7 +26,7 @@ const mealSteps: GuideStep[] = [
 
 const faqs = [
   ['Kolom mana yang wajib diisi?', 'Tombol Tinjau & submit baru aktif setelah seluruh data wajib terisi. Catatan kendaraan dan tambahan meal/minuman bersifat opsional.'],
-  ['Apa yang terjadi setelah request dikirim?', 'Request berstatus Submitted. Pantau perkembangannya di Dashboard Saya; proses notifikasi dan approval kendaraan ditangani Power Automate.'],
+  ['Apa yang terjadi setelah request dikirim?', 'Request berstatus Submitted. Pantau perkembangannya di Dashboard Saya; notifikasi admin dan approval diproses di aplikasi.'],
   ['Mengapa request saya tidak terlihat?', 'Dashboard hanya menampilkan request dengan email requester yang sama dengan akun perusahaan yang sedang digunakan.'],
   ['Apakah request beberapa hari perlu dibuat atau di-approve berulang?', 'Tidak. Pada Extra Meal, pilih tanggal mulai dan selesai satu kali. Sistem membuat record harian dengan Request ID yang sama, dan satu keputusan approval berlaku ke seluruh tanggal dalam grup tersebut.'],
   ['Bagaimana jika data di ringkasan salah?', 'Pilih Periksa lagi pada dialog konfirmasi, koreksi form, lalu tinjau kembali sebelum mengirim.'],

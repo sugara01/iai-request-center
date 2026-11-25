@@ -1,0 +1,13 @@
+{
+  "name": "iai-request-center-api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch-path=./index.mjs index.mjs",
+    "start": "node index.mjs"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "pg": "^8.16.3"
+  }
+}

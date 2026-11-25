@@ -1,92 +1,37 @@
-# React + TypeScript + Vite
+# IAI Request Center
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React/TypeScript requester and admin application with a PostgreSQL-backed API.
 
-Currently, two official plugins are available:
+## Local development
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Prerequisites: Docker Desktop, Node.js 20 or newer, and npm.
 
-## Expanding the ESLint configuration
+1. Start PostgreSQL from this directory:
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+   ```powershell
+   docker compose up -d postgres
+   ```
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+   Docker initializes the schema and fictional demo records on the first database start. PostgreSQL data persists in the `iai-postgres-data` volume.
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+2. In a separate terminal, install and start the API:
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+   ```powershell
+   npm install --prefix server
+   npm run dev --prefix server
+   ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+   The API uses `postgres://iai_app:local-dev-only@localhost:5434/iai_request_center` by default and listens on port 3001. Override these with `DATABASE_URL` and `API_PORT` environment variables if needed. The container maps PostgreSQL to host port 5434 to avoid conflicting with existing local databases; set `POSTGRES_PORT` to change it.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+3. In another terminal, install frontend dependencies and start Vite:
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+   ```powershell
+   npm install
+   npm run dev
+   ```
 
-## Build Performance Optimization
+   Open http://localhost:5173. Vite proxies `/api` requests to the local API.
 
-### Fast Type & Syntax Checking
+Choose a local demo identity from the selector in the top bar to try requester, vehicle-admin, meal-admin, and super-admin views. The adjacent moon/sun button switches between the default and neon-dark themes and remembers the selection. Demo authentication is intentionally limited to non-production environments; do not expose this setup to a network or use it for real employee data. Email notifications are not configured.
 
-For quick validation without running the full build:
-
-```bash
-# Fast syntax check only (<100ms)
-bun run check:go
-
-# Full type checking + syntax validation
-bun run check
-```
-
-Available scripts:
-- `bun run check:go` - Uses esbuild for rapid syntax checking
-- `bun run check` - Full TypeScript type checking via tsc
-- `bun run typecheck:go` - Experimental faster type checking with tsgo
-
-### Future Build Optimization
-
-For even faster production builds, consider migrating to [Rolldown](https://vite.dev/guide/rolldown), Vite's next-generation Rust-based bundler that aims to replace both Rollup and esbuild with significantly improved performance.
+The database schema and seed records are in `server/schema.sql`. Docker only runs initialization scripts when the data volume is empty; changing the schema later requires a database migration.

@@ -1,12 +1,29 @@
 import { useQuery } from '@tanstack/react-query';
-import { getContext } from '@microsoft/power-apps/app';
+import { apiRequest, getDemoUserEmail } from '@/lib/api';
 
-export const useUser = () => {
-  return useQuery({
-    queryKey: ['user'],
-    queryFn: async () => {
-      const context = await getContext();
-      return context.user;
-    },
-  });
+export type AppUser = {
+  userPrincipalName: string;
+  fullName: string;
+  isVehicleAdmin: boolean;
+  isMealAdmin: boolean;
+  isSuperAdmin: boolean;
 };
+
+export type DemoUser = { email: string; fullName: string };
+
+export function useUser() {
+  const email = getDemoUserEmail();
+  return useQuery({
+    queryKey: ['session', email],
+    queryFn: () => apiRequest<AppUser>('/session'),
+    staleTime: 60_000,
+  });
+}
+
+export function useDemoUsers() {
+  return useQuery({
+    queryKey: ['demo-users'],
+    queryFn: () => apiRequest<DemoUser[]>('/demo-users'),
+    staleTime: Infinity,
+  });
+}

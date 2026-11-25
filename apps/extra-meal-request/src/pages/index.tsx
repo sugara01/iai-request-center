@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useMemo, useRef, useState, type ChangeEvent, type KeyboardEvent, type MouseEvent } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { CarFront, CheckCircle2, ChevronDown, ChevronRight, Clock3, Eye, Plus, RefreshCw, Search, UtensilsCrossed, XCircle } from 'lucide-react';
+import { CarFront, CheckCircle2, ChevronDown, ChevronRight, Clock3, Eye, Globe2, Plus, RefreshCw, Search, UserRound, UtensilsCrossed, XCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { StatusBadge } from '@/components/status-badge';
+import { UserIdentity } from '@/components/user-identity';
 import { type MealRequest } from '@/lib/meal-store';
 import { useMealRequests } from '@/hooks/use-meal-requests';
 import { useUser } from '@/hooks/use-user';
@@ -22,6 +23,7 @@ import { getVehicleDestinationDetail, getVehicleDestinationLabel, getVehicleDest
 import { useLanguage } from '@/lib/localization';
 
 type RequestFilter = 'all' | 'processing' | 'approved' | 'rejected';
+type RequestScope = 'mine' | 'all';
 type DetailItem = { label: string; value: string };
 type UnifiedRequest = { id: string; type: 'Kendaraan' | 'Extra Meal'; summary: string; schedule: string; status: string; requester: string; detail: DetailItem[]; createdAt?: string; mealRecords?: MealRequest[] };
 
@@ -50,9 +52,15 @@ export default function HomePage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [requestScope, setRequestScope] = useState<RequestScope>('mine');
   const email = user?.userPrincipalName ?? 'ayu.lestari@example.com';
-  const meals = mealRequests.filter((request: MealRequest) => request.requesterEmail.toLowerCase() === email.toLowerCase());
-  const vehicles = vehicleRequests.filter((request: RequestKendaraan) => request.emailPemohon?.toLowerCase() === email.toLowerCase());
+  const isAdmin = Boolean(user?.isVehicleAdmin || user?.isMealAdmin || user?.isSuperAdmin);
+  const myMeals = mealRequests.filter((request: MealRequest) => request.requesterEmail.toLowerCase() === email.toLowerCase());
+  const myVehicles = vehicleRequests.filter((request: RequestKendaraan) => request.emailPemohon?.toLowerCase() === email.toLowerCase());
+  const meals = isAdmin && requestScope === 'all' ? mealRequests : myMeals;
+  const vehicles = isAdmin && requestScope === 'all' ? vehicleRequests : myVehicles;
+  const myRequestCount = myVehicles.length + new Set(myMeals.map((request: MealRequest) => request.id)).size;
+  const allRequestCount = vehicleRequests.length + new Set(mealRequests.map((request: MealRequest) => request.id)).size;
 
   const unified = useMemo<UnifiedRequest[]>(() => {
     const vehicleItems = vehicles.map((request: RequestKendaraan) => {
@@ -128,7 +136,7 @@ export default function HomePage() {
     <div className="p-6 lg:p-8">
       <header className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-sm text-muted-foreground">{t('Dashboard requester')}</p><h1 className="mt-1 text-2xl font-bold">{t('Selamat Datang, {{name}}', { name: formatWelcomeName(user?.fullName, locale === 'id-ID' ? 'Pengguna' : 'User') })}</h1><p className="mt-1 text-sm text-muted-foreground">{t('Pantau seluruh request kendaraan dan extra meal dalam satu tempat.')}</p><p className="mt-2 text-xs text-muted-foreground">Sinkron otomatis setiap 15 detik • terakhir diperbarui {new Date(Math.max(mealsUpdatedAt, vehiclesUpdatedAt) || Date.now()).toLocaleTimeString(locale)}</p></div><div className="flex gap-2"><Button variant="outline" onClick={() => { void refetchVehicles(); void refetchMeals(); }} disabled={isVehiclesFetching || isMealsFetching}><RefreshCw className={isVehiclesFetching || isMealsFetching ? 'animate-spin' : ''} />{t('Refresh')}</Button><Button asChild><Link to="/buat-request"><Plus />{t('Buat Request')}</Link></Button></div></header>
       <section className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label={t('Filter status request')}>{stats.map(({ label, value, icon: Icon, filter: statFilter }) => <button key={label} type="button" className="rounded-xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" onClick={() => { setFilter(statFilter); setPage(1); }} aria-pressed={filter === statFilter}><Card className={filter === statFilter ? 'border-primary shadow-sm' : 'transition-colors hover:border-primary'}><CardContent className="flex items-center justify-between p-5"><div><p className="text-sm text-muted-foreground">{label}</p><p className="mt-1 text-3xl font-bold">{value}</p></div><div className={filter === statFilter ? 'grid size-10 place-items-center rounded-lg bg-primary text-primary-foreground' : 'grid size-10 place-items-center rounded-lg bg-accent text-accent-foreground'}><Icon className="size-5" /></div></CardContent></Card></button>)}</section>
-      <Card className="mt-6"><CardHeader><div className="flex flex-wrap items-center justify-between gap-3"><div><CardTitle>{t('Request saya')}</CardTitle><p className="mt-1 text-sm text-muted-foreground">{visible.length} {t('dari')} {unified.length} {t('pengajuan')}</p></div><div className="relative w-full sm:w-72"><Search className="absolute left-3 top-2.5 size-4" /><Input className="pl-9" value={query} onChange={(event: ChangeEvent<HTMLInputElement>) => { setQuery(event.target.value); setPage(1); }} placeholder={t('Cari ID, jenis, tujuan, status')} aria-label={t('Cari request')} /></div></div></CardHeader>
+      <Card className="mt-6"><CardHeader><div className="flex flex-wrap items-center justify-between gap-3"><div><div className="flex flex-wrap items-center gap-2"><CardTitle>{t(isAdmin && requestScope === 'all' ? 'Semua Request' : 'Request saya')}</CardTitle>{isAdmin && user && <UserIdentity user={user} />}</div><p className="mt-1 text-sm text-muted-foreground">{isAdmin ? requestScope === 'mine' ? t('Menampilkan {{visible}} dari {{total}} pengajuan milik {{name}} ({{email}}).', { visible: visible.length, total: unified.length, name: user?.fullName ?? 'User', email }) : t('Menampilkan {{visible}} dari {{total}} pengajuan semua user.', { visible: visible.length, total: unified.length }) : `${visible.length} ${t('dari')} ${unified.length} ${t('pengajuan')}`}</p></div><div className="flex w-full flex-wrap items-center justify-end gap-2 sm:w-auto">{isAdmin && <div role="group" aria-label={t('Lingkup request')} className="flex shrink-0 rounded-lg border bg-muted p-1">{([['mine', UserRound, 'Request Saya', myRequestCount], ['all', Globe2, 'Semua Request', allRequestCount]] as const).map(([scope, Icon, label, count]) => <button key={scope} type="button" aria-pressed={requestScope === scope} className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors ${requestScope === scope ? 'bg-card font-medium text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`} onClick={() => { setRequestScope(scope); setPage(1); }}><Icon className="size-4" />{t(label)} ({count})</button>)}</div>}<div className="relative w-full sm:w-72"><Search className="absolute left-3 top-2.5 size-4" /><Input className="pl-9" value={query} onChange={(event: ChangeEvent<HTMLInputElement>) => { setQuery(event.target.value); setPage(1); }} placeholder={t('Cari ID, jenis, tujuan, status')} aria-label={t('Cari request')} /></div></div></div></CardHeader>
         <CardContent>{isVehiclesLoading || isMealsLoading ? <div className="space-y-3" aria-hidden="true"><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" /></div> : visible.length === 0 ? <div className="rounded-lg border border-dashed p-10 text-center"><p className="font-medium">{t('Request tidak ditemukan')}</p><p className="mt-1 text-sm text-muted-foreground">{t('Ubah kata pencarian atau pilih kategori status lain.')}</p></div> : <>
           <div className="w-full overflow-x-auto">
             <Table className="min-w-[1040px] table-fixed"><TableHeader><TableRow><TableHead className="w-12" /><TableHead className="w-40">Request ID</TableHead><TableHead className="w-36">{t('Jenis')}</TableHead><TableHead className="w-72">{t('Tujuan / acara')}</TableHead><TableHead className="w-48">{t('Jadwal')}</TableHead><TableHead className="w-48">Status</TableHead><TableHead className="w-28 text-right">{t('Detail')}</TableHead></TableRow></TableHeader><TableBody>

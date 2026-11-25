@@ -59,9 +59,11 @@ export default function NewRequestPage() {
     const requestId = `EMR-${format(now, 'yyMMdd')}-${String(Math.floor(Math.random() * 90) + 10)}`;
     const dailyRequests: MealRequest[] = selectedDays.map((date: Date, index: number) => ({ id: requestId, recordId: `${requestId}-${format(date, 'yyyyMMdd')}`, serviceDate: format(date, 'yyyy-MM-dd'), requester: user?.fullName ?? 'IAI User', requesterEmail: user?.userPrincipalName ?? '', department: form.department, purpose: form.purpose, startDate: startKey, endDate: endKey, durationHours: sameDay ? Number(form.hours) : undefined, mealCategory: form.meal === 'Other' ? form.otherMeal : form.meal, quantity: Number(form.quantity), additional: form.additional, status: 'Submitted', createdAt: now.toISOString(), approvalTrigger: index === 0 }));
     try {
-      await createRequests.mutateAsync(dailyRequests);
-      toast.success(`${dailyRequests.length} ${t('record harian tersimpan di SharePoint. Power Automate akan menangani email dan approval.')}`);
-      navigate(`/request/${requestId}`);
+      const created = await createRequests.mutateAsync(dailyRequests);
+      const savedRequestId = created[0]?.id;
+      if (!savedRequestId) throw new Error(t('Request berhasil dikirim tetapi nomor tiket tidak diterima.'));
+      toast.success(`${dailyRequests.length} ${t('record harian tersimpan di PostgreSQL.')}`);
+      navigate(`/request/${savedRequestId}`);
     } catch (error: unknown) {
       const detail = error instanceof Error ? error.message : t('Kesalahan koneksi tidak diketahui.');
       toast.error(`${t('Request belum tersimpan sepenuhnya. Periksa koneksi ExtraMealReq. Detail:')} ${detail}`);
@@ -95,8 +97,8 @@ export default function NewRequestPage() {
           </CardContent>
         </Card>
         <aside className="space-y-4">
-          <Card><CardHeader><CardTitle className="flex items-center gap-2"><CalendarDays className="size-5" />{t('Preview baris')}</CardTitle></CardHeader><CardContent><p className="text-4xl font-bold">{days.length}</p><p className="mt-1 text-sm text-muted-foreground">{t('baris SharePoint akan dibuat')}</p><div className="mt-4 max-h-64 space-y-2 overflow-auto">{days.map((date: Date, index: number) => <div key={date.toISOString()} className="flex items-center justify-between rounded-md bg-muted p-2 text-sm text-muted-foreground"><span>{format(date, 'dd MMM yyyy')}</span><span>{index === 0 ? t('Pemicu approval') : t('Detail')}</span></div>)}</div></CardContent></Card>
-          <Card className="border-l-4 border-l-primary"><CardContent className="p-5"><div className="flex gap-3"><Utensils className="mt-0.5 size-5" /><div><p className="font-medium">{t('Satu approval')}</p><p className="mt-1 text-sm text-muted-foreground">{t('Hanya baris pertama yang menandai pemicu Power Automate. Semua baris memakai Request ID yang sama.')}</p></div></div></CardContent></Card>
+          <Card><CardHeader><CardTitle className="flex items-center gap-2"><CalendarDays className="size-5" />{t('Preview baris')}</CardTitle></CardHeader><CardContent><p className="text-4xl font-bold">{days.length}</p><p className="mt-1 text-sm text-muted-foreground">{t('baris harian akan dibuat')}</p><div className="mt-4 max-h-64 space-y-2 overflow-auto">{days.map((date: Date, index: number) => <div key={date.toISOString()} className="flex items-center justify-between rounded-md bg-muted p-2 text-sm text-muted-foreground"><span>{format(date, 'dd MMM yyyy')}</span><span>{index === 0 ? t('Pemicu approval') : t('Detail')}</span></div>)}</div></CardContent></Card>
+          <Card className="border-l-4 border-l-primary"><CardContent className="p-5"><div className="flex gap-3"><Utensils className="mt-0.5 size-5" /><div><p className="font-medium">{t('Satu approval')}</p><p className="mt-1 text-sm text-muted-foreground">{t('Hanya baris pertama yang menandai pemicu approval. Semua baris memakai Request ID yang sama.')}</p></div></div></CardContent></Card>
         </aside>
       </form>
       <AlertDialog open={open} onOpenChange={setOpen}>

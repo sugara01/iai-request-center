@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: iai-request-center-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: iai_request_center
+      POSTGRES_USER: iai_app
+      POSTGRES_PASSWORD: local-dev-only
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5434}:5432"
+    volumes:
+      - iai-postgres-data:/var/lib/postgresql/data
+      - ./server/schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U iai_app -d iai_request_center"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  iai-postgres-data:

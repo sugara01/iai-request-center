@@ -155,8 +155,8 @@ export default function VehicleAdminContent() {
   }
   async function confirmCancel() {
     if (!cancelling?.id) return;
-    if (isFinalStatus(cancelling)) {
-      toast.error(`Request ${getVehicleRequestNumber(cancelling)} sudah berstatus final dan tidak dapat dibatalkan.`);
+    if (statusLabel(cancelling) !== 'Submitted') {
+      toast.error(`Request ${getVehicleRequestNumber(cancelling)} hanya dapat dibatalkan saat berstatus Submitted.`);
       setCancelling(undefined);
       return;
     }

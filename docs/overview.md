@@ -1,35 +1,32 @@
 # IAI Request Center
 
 ## Overview
-IAI Request Center adalah pusat semua pengajuan di IAI berbasis SharePoint, dengan dashboard requester, reminder approval, dan kontrol admin. Aplikasi saat ini menyatukan request kendaraan untuk business trip dan request extra meal, sekaligus menjadi fondasi untuk layanan pengajuan berikutnya.
+IAI Request Center is a React and TypeScript application for vehicle and extra-meal requests. It keeps the requester dashboard, bilingual UI, admin monitoring, approval workflows, CSV export, and admin access management while using a PostgreSQL database.
 
 ## Roles
-- **Regular user** memilih jenis request, mengisi formulir, memantau status kendaraan dan extra meal, serta membuka panduan interaktif.
-- Request kendaraan operasional tersimpan dan dibaca langsung dari SharePoint List `RequestKendaraanApps` melalui koneksi `shared_sharepointonline`; form request, Dashboard Saya, dan View Admin Kendaraan memakai sumber yang sama.
-- **Admin owner meal** mengelola record harian Extra Meal dari SharePoint List `ExtraMealReq` dan memahami arsitektur workflow Power Automate terkait.
-- **Super admin Riyan Sugara** menetapkan akses admin kendaraan dan extra meal per pengguna melalui data `AdminAcess`, dengan email pengguna disimpan pada kolom Title.
-- **Approver** memproses approval melalui Power Automate dan hasilnya ditulis kembali ke SharePoint.
+- **Requester** submits requests and follows their status on My Dashboard.
+- **Vehicle admin** reviews availability, updates request details, records notes, and completes the Plant Director stage.
+- **Meal admin** approves or rejects meal request groups, corrects quantities, and cancels eligible requests.
+- **Super admin** manages vehicle and meal admin access.
+
+Local development includes a demo-user selector. This is not production authentication and must be replaced with company identity authentication before deployment.
 
 ## Key scenarios
-- Membuat request kendaraan sesuai skema terbaru: tanggal, jam, titik jemput, pilihan tujuan, detail tujuan lainnya, departemen, jumlah penumpang, keperluan, dan catatan.
-- Membuat request extra meal berdasarkan periode kegiatan; setiap tanggal menjadi record audit dengan Request ID yang sama, sedangkan satu approval dan aksi admin berlaku ke seluruh grup Request ID.
-- Menampilkan kedua jenis request dalam Dashboard Saya berdasarkan identitas pengguna.
-- Menampilkan notifikasi hasil final Approved atau Rejected untuk request Kendaraan dan Extra Meal milik pengguna pada ikon bel; klik notifikasi membuka detail request terkait di Dashboard Saya.
-- Mengatur visibilitas dan proteksi route administrasi berdasarkan role yang tersimpan terpusat.
-- Memberikan Riyan menu khusus untuk assign Admin Kendaraan dan Admin Extra Meal.
-- Menyediakan Workflow Request bilingual yang mencerminkan alur aktual Kendaraan dan Extra Meal, termasuk approval kendaraan dua tahap yang terkunci berurutan: Admin Kendaraan memutuskan ketersediaan lebih dulu, Available membuka tahap Plant Director untuk seluruh Admin Kendaraan, dan Not Available langsung final Rejected.
-- Mengelompokkan record Extra Meal di menu admin menjadi satu ringkasan Request ID yang dapat dibuka; approve, reject, koreksi quantity/status, dan cancel diterapkan ke seluruh tanggal dalam grup, sementara penghapusan permanen tetap per record.
-- Menyediakan dashboard operasional pada Admin Kendaraan dan Admin Extra Meal dengan filter periode, kartu status, distribusi status, indikator beban kerja, serta antrean request yang perlu perhatian.
-- Menyediakan aksi konsisten berupa lihat, koreksi, batalkan, dan hapus pada kedua view admin; Cancel hanya tersedia saat request masih Submitted dan dinonaktifkan setelah Approved, Rejected, atau Cancelled.
-- Memuat seluruh halaman data SharePoint pada Admin Kendaraan, dengan status kegagalan koneksi yang ditampilkan secara terpisah.
+- Vehicle requests include date, time, pickup point, destination, department, passenger count, purpose, and notes. Approval is sequential: vehicle availability first, then Plant Director approval.
+- Extra-meal requests create one database record per service date, sharing a Request ID. Weekend dates are excluded by default; approval, rejection, and cancellation apply to the group.
+- Admins can monitor request status, filter and search records, export CSV, correct meal quantities, and view approval notes.
+- Admin access and request changes are recorded in PostgreSQL; admin notifications are shown in the application. Users can switch between the default and neon-dark themes from the top bar.
 
 ## Design direction
-Antarmuka industrial-utilitarian dengan sidebar biru gelap, aksen amber, ikon request yang netral, tipografi sistem yang ringkas, dan tabel operasional. Bahasa utama adalah Bahasa Indonesia.
+Industrial-utilitarian interface with a dark navy sidebar, amber accent, compact typography, and operational tables. Bahasa Indonesia is the primary language, with an English option.
 
-## Data sources
-- **Akses admin:** `AdminAcess` dengan kolom `Title` sebagai email pengguna serta flag `VehicleAdmin` dan `MealAdmin`.
-- **Kendaraan:** model SharePoint `RequestKendaraan`; kolom teks `CurrentStatus` mendukung Submitted, Approved, Rejected - Vehicle not available, Rejected - Plant Director, Pending Plant Director Approval, dan Cancelled.
-- **Extra meal:** SharePoint List `ExtraMealReq`; satu item mewakili satu tanggal layanan, dengan `RequestID` bersama dan `RecordID` unik per tanggal. Kolom `ServiceDate`, `StartDate`, dan `EndDate` ditulis melalui SDK SharePoint native menggunakan nilai UTC tengah hari dan dinormalisasi kembali sebagai tanggal kalender agar tidak bergeser akibat konversi zona waktu.
+## Data and workflow
+- **Database:** PostgreSQL 17 in Docker Desktop, with persistent storage in the `iai-postgres-data` volume.
+- **API:** Express and `pg`, running locally on port 3001 and accessed through the Vite `/api` proxy.
+- **Vehicle requests:** one row per request, with server-generated ticket numbers and status transitions enforced by the API.
+- **Extra meal:** one row per service date, with a shared Request ID, unique Record ID, one approval trigger, and transactional group operations.
+- **Admin access:** role assignments are stored in PostgreSQL and checked by the API.
+- **Audit:** privileged writes are recorded in `audit_log`.
+- **Notifications:** admin request queues are in-app only. Email and Power Automate integrations are not enabled in this configuration.
 
-## Workflow boundary
-Aplikasi membuat request, menampilkan progres, menjalankan review dan koreksi berbasis peran, memperbarui status request atau grup, menerapkan aturan Cancel, dan menampilkan catatan approval. Untuk Extra Meal, satu ApprovalTrigger mewakili seluruh record dengan Request ID yang sama dan approve, reject, koreksi, serta cancel berlaku ke seluruh grup. Power Automate mengisi kolom `RequesterManager` di SharePoint, menjalankan integrasi approval bila diperlukan, menulis outcome approval, dan mengirim email kepada requester hanya saat hasil final **Approved** atau **Rejected**. Status antara, koreksi, dan Cancelled tetap terlihat di aplikasi tanpa email. SharePoint tetap menjadi sumber kebenaran untuk data, status, catatan, manager, dan audit.
+See [apps/extra-meal-request/README.md](../apps/extra-meal-request/README.md) for local setup.
