@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { BookOpenCheck, CarFront, Check, ChevronDown, ClipboardList, Gauge, Languages, ShieldCheck, SquarePen, Workflow } from 'lucide-react';
+import { BookOpenCheck, CarFront, Check, ChevronDown, ClipboardList, Gauge, Languages, ShieldCheck, SquarePen, Users, Workflow } from 'lucide-react';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -22,13 +22,14 @@ export default function Layout() {
   const { data: user, isPending: isUserPending } = useUser();
   const { data: demoUsers = [] } = useDemoUsers();
   const email = user?.userPrincipalName;
-  const { isVehicleAdmin, isMealAdmin, isSuperAdmin, isPending: isAccessPending } = useAdminAuthorization(email);
+  const { isVehicleAdmin, isMealAdmin, isITAdmin, isSuperAdmin, isPending: isAccessPending } = useAdminAuthorization(email);
   const notificationCounts = useAdminNotificationCounts(isVehicleAdmin, isMealAdmin);
   const adminLinks = [
     ...(isVehicleAdmin ? [{ to: '/admin-kendaraan', label: t('Admin Kendaraan'), icon: CarFront, count: notificationCounts.vehicle }] : []),
     ...(isMealAdmin ? [{ to: '/admin-meal', label: t('Admin Extra Meal'), icon: ClipboardList, count: notificationCounts.meal }] : []),
     ...(isVehicleAdmin || isMealAdmin ? [{ to: '/panduan-power-automate', label: t('Workflow Request'), icon: Workflow }] : []),
     ...(isSuperAdmin ? [{ to: '/kelola-admin', label: t('Kelola Admin'), icon: ShieldCheck }] : []),
+    ...(isITAdmin || isSuperAdmin ? [{ to: '/kelola-pengguna', label: t('Kelola Pengguna'), icon: Users }] : []),
   ];
   const localizedRequesterLinks = requesterLinks.map((link: typeof requesterLinks[number]) => ({ ...link, label: t(link.label) }));
   const renderLinks = (links: Array<{ to: string; label: string; icon: typeof Gauge; count?: number }>) => links.map(({ to, label, icon: Icon, count }: { to: string; label: string; icon: typeof Gauge; count?: number }) => <SidebarMenuItem key={to}><SidebarMenuButton asChild><NavLink to={to} end={to === '/'} className={({ isActive }: { isActive: boolean }) => isActive ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : ''}><Icon /><span>{label}</span>{Boolean(count) && <Badge className="ml-auto min-w-5 justify-center px-1 text-xs">{count && count > 99 ? '99+' : count}</Badge>}</NavLink></SidebarMenuButton></SidebarMenuItem>);

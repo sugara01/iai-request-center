@@ -11,6 +11,29 @@ CREATE TABLE IF NOT EXISTS admin_access (
   CHECK (email = LOWER(email))
 );
 
+CREATE TABLE IF NOT EXISTS users (
+  id BIGSERIAL PRIMARY KEY,
+  username TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE,
+  display_name TEXT NOT NULL,
+  department TEXT,
+  job_title TEXT,
+  password_hash TEXT NOT NULL,
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  must_change_password BOOLEAN NOT NULL DEFAULT TRUE,
+  role TEXT NOT NULL DEFAULT 'User' CHECK (role IN ('User', 'ITAdmin', 'SuperAdmin')),
+  vehicle_admin BOOLEAN NOT NULL DEFAULT FALSE,
+  meal_admin BOOLEAN NOT NULL DEFAULT FALSE,
+  approver_doa BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  last_login TIMESTAMPTZ,
+  CHECK (email = LOWER(email))
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS users_username_lower_idx
+  ON users (LOWER(username));
+
 CREATE TABLE IF NOT EXISTS vehicle_requests (
   id BIGSERIAL PRIMARY KEY,
   request_number TEXT NOT NULL UNIQUE,

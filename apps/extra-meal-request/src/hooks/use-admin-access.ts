@@ -20,6 +20,7 @@ export function useAdminAuthorization(_email: string | undefined) {
     ...query,
     isVehicleAdmin: query.data?.isVehicleAdmin ?? false,
     isMealAdmin: query.data?.isMealAdmin ?? false,
+    isITAdmin: query.data?.isITAdmin ?? false,
     isSuperAdmin: query.data?.isSuperAdmin ?? false,
   };
 }

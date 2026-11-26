@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "dev": "node --watch-path=./index.mjs index.mjs",
-    "start": "node index.mjs"
+    "start": "node index.mjs",
+    "test": "node --test"
   },
   "dependencies": {
     "express": "^5.1.0",

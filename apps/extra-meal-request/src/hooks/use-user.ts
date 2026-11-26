@@ -4,9 +4,12 @@ import { apiRequest, getDemoUserEmail } from '@/lib/api';
 export type AppUser = {
   userPrincipalName: string;
   fullName: string;
+  role: 'User' | 'ITAdmin' | 'SuperAdmin';
+  isITAdmin: boolean;
   isVehicleAdmin: boolean;
   isMealAdmin: boolean;
   isSuperAdmin: boolean;
+  isApproverDoa: boolean;
 };
 
 export type DemoUser = { email: string; fullName: string };
