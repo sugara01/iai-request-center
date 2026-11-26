@@ -51,6 +51,24 @@ CREATE INDEX IF NOT EXISTS auth_sessions_user_active_idx
   ON auth_sessions (user_id, expires_at)
   WHERE revoked_at IS NULL;
 
+CREATE TABLE IF NOT EXISTS user_notifications (
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  event_type TEXT NOT NULL CHECK (event_type IN (
+    'request_assigned', 'request_approved', 'request_rejected', 'password_reset'
+  )),
+  related_entity_type TEXT,
+  related_entity_id TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  read_at TIMESTAMPTZ
+);
+
+CREATE INDEX IF NOT EXISTS user_notifications_user_created_idx
+  ON user_notifications (user_id, created_at DESC, id DESC);
+CREATE INDEX IF NOT EXISTS user_notifications_user_unread_idx
+  ON user_notifications (user_id)
+  WHERE read_at IS NULL;
+
 CREATE TABLE IF NOT EXISTS vehicle_requests (
   id BIGSERIAL PRIMARY KEY,
   request_number TEXT NOT NULL UNIQUE,

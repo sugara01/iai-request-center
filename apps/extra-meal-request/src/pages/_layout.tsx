@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { BookOpenCheck, CarFront, Check, ChevronDown, ClipboardList, Gauge, KeyRound, Languages, LogOut, Presentation, SquarePen, UserRound, Users, Workflow } from 'lucide-react';
+import { Bell, BookOpenCheck, CarFront, Check, ChevronDown, ClipboardList, Gauge, Inbox as InboxIcon, KeyRound, Languages, LogOut, Presentation, SquarePen, UserRound, Users, Workflow } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
@@ -19,11 +19,12 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { AdminNotificationCenter, useAdminNotificationCounts } from '@/components/admin-notification-center';
+import { InboxNotificationBell, useAdminNotificationCounts } from '@/components/admin-notification-center';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { UserIdentity } from '@/components/user-identity';
 import { useUser, type AppUser } from '@/hooks/use-user';
 import { useAdminAuthorization } from '@/hooks/use-admin-access';
+import { useInboxApprovals, useUserNotifications } from '@/hooks/use-inbox';
 import { useLanguage, type Language } from '@/lib/localization';
 import { apiRequest } from '@/lib/api';
 import { toast } from 'sonner';
@@ -59,6 +60,9 @@ export default function Layout() {
   const email = user?.userPrincipalName;
   const { isVehicleAdmin, isMealAdmin, isITAdmin, isSuperAdmin, isPending: isAccessPending } = useAdminAuthorization(email);
   const notificationCounts = useAdminNotificationCounts(isVehicleAdmin, isMealAdmin);
+  const canSeeApprovalQueue = isVehicleAdmin || isMealAdmin;
+  const { data: inboxApprovals = [] } = useInboxApprovals(canSeeApprovalQueue);
+  const { data: notifications } = useUserNotifications();
   const showVehicleAdmin = demoRole ? demoRole === 'Vehicle Admin' : isVehicleAdmin;
   const showMealAdmin = demoRole ? demoRole === 'Meal Admin' : isMealAdmin;
   const adminLinks = [
@@ -66,6 +70,10 @@ export default function Layout() {
     ...(showMealAdmin ? [{ to: '/admin-meal', label: t('Admin Extra Meal'), icon: ClipboardList, count: notificationCounts.meal }] : []),
     ...(showVehicleAdmin || showMealAdmin ? [{ to: '/panduan-power-automate', label: t('Workflow Request'), icon: Workflow }] : []),
     ...(!demoRole && (isITAdmin || isSuperAdmin) ? [{ to: '/kelola-pengguna', label: t('Kelola Pengguna'), icon: Users }] : []),
+  ];
+  const inboxLinks = [
+    ...(canSeeApprovalQueue ? [{ to: '/inbox/approvals', label: t('Pending Approvals'), icon: InboxIcon, count: inboxApprovals.length }] : []),
+    { to: '/inbox/notifications', label: t('Notifications'), icon: Bell, count: notifications?.unreadCount ?? 0 },
   ];
   const localizedRequesterLinks = requesterLinks.map((link: typeof requesterLinks[number]) => ({ ...link, label: t(link.label) }));
   const logout = async () => {
@@ -94,6 +102,10 @@ export default function Layout() {
             <SidebarGroup>
               <SidebarGroupLabel>{t('Requester')}</SidebarGroupLabel>
               <SidebarGroupContent><SidebarMenu>{renderLinks(localizedRequesterLinks)}</SidebarMenu></SidebarGroupContent>
+            </SidebarGroup>
+            <SidebarGroup>
+              <SidebarGroupLabel>{t('Inbox')}</SidebarGroupLabel>
+              <SidebarGroupContent><SidebarMenu>{renderLinks(inboxLinks)}</SidebarMenu></SidebarGroupContent>
             </SidebarGroup>
             {isUserPending || isAccessPending ? (
               <SidebarGroup aria-label={t('Memuat akses administrasi')}>
@@ -125,7 +137,7 @@ export default function Layout() {
           )}
           <div className="flex flex-wrap items-center justify-end gap-2 border-b bg-card p-3 text-card-foreground">
             <SidebarTrigger className="mr-auto" aria-label={t('Tampilkan/sembunyikan menu navigasi')} title={t('Tampilkan/sembunyikan menu navigasi')} />
-            {!demoRole && !isUserPending && !isAccessPending && (isVehicleAdmin || isMealAdmin) && <AdminNotificationCenter isVehicleAdmin={isVehicleAdmin} isMealAdmin={isMealAdmin} />}
+            {!isUserPending && <InboxNotificationBell />}
             <ThemeToggle />
             {languageMenu}
             <DropdownMenu>

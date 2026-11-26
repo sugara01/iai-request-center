@@ -18,6 +18,7 @@ import {
   SESSION_TTL_MS,
   setSessionCookie,
 } from './auth.mjs';
+import { mapInboxApproval, mapUserNotification, mealGroupHasPendingApproval } from './inbox.mjs';
 
 const { Pool } = pg;
 const port = Number(process.env.API_PORT ?? 3001);
@@ -122,6 +123,76 @@ app.post('/api/auth/logout', async (req, res) => {
 
 app.get('/api/session', async (req, res) => {
   res.json(mapAppUser(req.user));
+});
+
+app.get('/api/inbox/approvals', async (req, res) => {
+  const { rows: users } = await pool.query(
+    'SELECT vehicle_admin, meal_admin FROM users WHERE id = $1 AND is_active = TRUE',
+    [req.user.id],
+  );
+  const user = users[0];
+  if (!user || (!user.vehicle_admin && !user.meal_admin)) {
+    throw new HttpError(403, 'Vehicle Admin or Extra Meal Admin permission is required.');
+  }
+
+  const { rows } = await pool.query(
+    `SELECT 'vehicle' AS request_type, request_number AS request_id, requester_name,
+            created_at AS request_date, current_status_key AS current_status, id AS vehicle_id
+     FROM vehicle_requests
+     WHERE $1::BOOLEAN
+       AND current_status_key IN ('Submitted', 'PendingPlantDirectorApproval')
+     UNION ALL
+     SELECT 'meal' AS request_type, request_id, MIN(requester_name) AS requester_name,
+            MIN(created_at) AS request_date,
+            CASE WHEN COUNT(DISTINCT current_status) = 1 THEN MIN(current_status) ELSE 'Mixed' END AS current_status,
+            NULL::BIGINT AS vehicle_id
+     FROM meal_requests
+     WHERE $2::BOOLEAN
+     GROUP BY request_id
+     HAVING BOOL_OR(current_status = 'Submitted')
+     ORDER BY request_date ASC, request_id ASC`,
+    [Boolean(user.vehicle_admin), Boolean(user.meal_admin)],
+  );
+  res.json(rows.map(mapInboxApproval));
+});
+
+app.get('/api/notifications', async (req, res) => {
+  const { rows } = await pool.query(
+    `SELECT id, event_type, related_entity_type, related_entity_id, created_at, read_at,
+            (SELECT COUNT(*)::INTEGER FROM user_notifications
+             WHERE user_id = $1 AND read_at IS NULL) AS unread_count
+     FROM user_notifications
+     WHERE user_id = $1
+     ORDER BY created_at DESC, id DESC
+     LIMIT 100`,
+    [req.user.id],
+  );
+  res.json({
+    items: rows.map(mapUserNotification),
+    unreadCount: Number(rows[0]?.unread_count ?? 0),
+  });
+});
+
+app.post('/api/notifications/read-all', async (req, res) => {
+  const { rows } = await pool.query(
+    `UPDATE user_notifications SET read_at = NOW()
+     WHERE user_id = $1 AND read_at IS NULL
+     RETURNING id`,
+    [req.user.id],
+  );
+  res.json({ updated: rows.length });
+});
+
+app.patch('/api/notifications/:id/read', async (req, res) => {
+  const id = parseId(req.params.id);
+  const { rows } = await pool.query(
+    `UPDATE user_notifications SET read_at = COALESCE(read_at, NOW())
+     WHERE id = $1 AND user_id = $2
+     RETURNING id, read_at`,
+    [id, req.user.id],
+  );
+  if (!rows[0]) throw new HttpError(404, 'Notification was not found.');
+  res.json({ id: Number(rows[0].id), readAt: rows[0].read_at });
 });
 
 app.get('/api/profile', async (req, res) => {
@@ -313,6 +384,7 @@ app.post('/api/users/:id/reset-password', async (req, res) => {
       'UPDATE auth_sessions SET revoked_at = NOW() WHERE user_id = $1 AND revoked_at IS NULL',
       [id],
     );
+    await insertUserNotification(client, email, 'password_reset', 'user', email);
     await client.query('COMMIT');
   } catch (error) {
     await client.query('ROLLBACK');
@@ -473,6 +545,12 @@ app.post('/api/meal-requests', async (req, res) => {
       );
       created.push(result.rows[0]);
     }
+    await insertRoleNotifications(connection, {
+      eventType: 'request_assigned',
+      relatedEntityType: 'meal_request',
+      relatedEntityId: requestId,
+      mealAdmin: true,
+    });
     await connection.query('COMMIT');
     await writeAudit(req.user.email, 'meal_request', requestId, 'create_group', { recordCount: created.length });
     res.status(201).json(created.map(mapMealRequest));
@@ -488,14 +566,42 @@ app.patch('/api/meal-requests/:requestId/status', async (req, res) => {
   await requireRole(req, 'meal_admin');
   const status = requireString(req.body.status, 'status', 30);
   if (!['Submitted', 'Approved', 'Rejected', 'Cancelled'].includes(status)) throw new HttpError(400, 'Unsupported meal request status.');
-  const { rows } = await pool.query(
-    `UPDATE meal_requests SET current_status = $2 WHERE request_id = $1
-     RETURNING id, request_id, record_id, service_date::TEXT AS service_date, requester_name, requester_email,
-       department, purpose, start_date::TEXT AS start_date, end_date::TEXT AS end_date, duration_hours, meal_category,
-       quantity, additional, current_status, approval_trigger, created_at`,
-    [req.params.requestId, status],
-  );
-  if (rows.length === 0) throw new HttpError(404, 'Meal request group was not found.');
+  const connection = await pool.connect();
+  let rows;
+  try {
+    await connection.query('BEGIN');
+    const { rows: current } = await connection.query(
+      'SELECT requester_email, current_status FROM meal_requests WHERE request_id = $1 FOR UPDATE',
+      [req.params.requestId],
+    );
+    if (current.length === 0) throw new HttpError(404, 'Meal request group was not found.');
+    if (req.body.requirePending === true && !mealGroupHasPendingApproval(current)) {
+      throw new HttpError(409, 'This Extra Meal request no longer requires approval.');
+    }
+    const statusChanged = current.some((record) => record.current_status !== status);
+    ({ rows } = await connection.query(
+      `UPDATE meal_requests SET current_status = $2 WHERE request_id = $1
+       RETURNING id, request_id, record_id, service_date::TEXT AS service_date, requester_name, requester_email,
+         department, purpose, start_date::TEXT AS start_date, end_date::TEXT AS end_date, duration_hours, meal_category,
+         quantity, additional, current_status, approval_trigger, created_at`,
+      [req.params.requestId, status],
+    ));
+    if (statusChanged && ['Approved', 'Rejected'].includes(status)) {
+      await insertUserNotification(
+        connection,
+        current[0].requester_email,
+        status === 'Approved' ? 'request_approved' : 'request_rejected',
+        'meal_request',
+        req.params.requestId,
+      );
+    }
+    await connection.query('COMMIT');
+  } catch (error) {
+    await connection.query('ROLLBACK');
+    throw error;
+  } finally {
+    connection.release();
+  }
   await writeAudit(req.user.email, 'meal_request', req.params.requestId, 'update_group_status', { status });
   res.json(rows.map(mapMealRequest));
 });
@@ -572,33 +678,52 @@ app.post('/api/vehicle-requests', async (req, res) => {
   if (String(request.emailPemohon ?? '').trim().toLowerCase() !== req.user.email) {
     throw new HttpError(403, 'You can only submit requests for your own account.');
   }
-  const sequence = Number((await pool.query("SELECT nextval('vehicle_request_number_seq') AS value")).rows[0].value);
-  const now = new Date();
-  const datePart = `${String(now.getFullYear()).slice(-2)}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
-  const requestNumber = `RQ${datePart}${String(sequence).padStart(4, '0')}`;
-  const { rows } = await pool.query(
-    `INSERT INTO vehicle_requests (
-       request_number, requester_name, requester_email, department_key, pickup_date, pickup_time,
-       pickup_point, destination_key, destination_other, purpose, requester_note, passenger_count
-     ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
-     RETURNING ${vehicleColumns}`,
-    [
-      requestNumber,
-      requireString(request.namaPemohon, 'namaPemohon', 160),
-      req.user.email,
-      requireString(request.departemenKey, 'departemenKey', 80),
-      requireDate(request.tanggal, 'tanggal'),
-      requireString(request.jam, 'jam', 10),
-      requireString(request.titikJemput, 'titikJemput', 200),
-      requireString(request.tujuanKey, 'tujuanKey', 80),
-      request.tujuanLainnyaDet ? String(request.tujuanLainnyaDet).slice(0, 500) : null,
-      requireString(request.keperluan, 'keperluan', 500),
-      request.catatan ? String(request.catatan).slice(0, 2000) : null,
-      requirePositiveInteger(request.jumlahPenumpang, 'jumlahPenumpang'),
-    ],
-  );
+  const connection = await pool.connect();
+  let requestNumber;
+  let created;
+  try {
+    await connection.query('BEGIN');
+    const sequence = Number((await connection.query("SELECT nextval('vehicle_request_number_seq') AS value")).rows[0].value);
+    const now = new Date();
+    const datePart = `${String(now.getFullYear()).slice(-2)}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+    requestNumber = `RQ${datePart}${String(sequence).padStart(4, '0')}`;
+    const { rows } = await connection.query(
+      `INSERT INTO vehicle_requests (
+         request_number, requester_name, requester_email, department_key, pickup_date, pickup_time,
+         pickup_point, destination_key, destination_other, purpose, requester_note, passenger_count
+       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+       RETURNING ${vehicleColumns}`,
+      [
+        requestNumber,
+        requireString(request.namaPemohon, 'namaPemohon', 160),
+        req.user.email,
+        requireString(request.departemenKey, 'departemenKey', 80),
+        requireDate(request.tanggal, 'tanggal'),
+        requireString(request.jam, 'jam', 10),
+        requireString(request.titikJemput, 'titikJemput', 200),
+        requireString(request.tujuanKey, 'tujuanKey', 80),
+        request.tujuanLainnyaDet ? String(request.tujuanLainnyaDet).slice(0, 500) : null,
+        requireString(request.keperluan, 'keperluan', 500),
+        request.catatan ? String(request.catatan).slice(0, 2000) : null,
+        requirePositiveInteger(request.jumlahPenumpang, 'jumlahPenumpang'),
+      ],
+    );
+    created = rows[0];
+    await insertRoleNotifications(connection, {
+      eventType: 'request_assigned',
+      relatedEntityType: 'vehicle_request',
+      relatedEntityId: requestNumber,
+      vehicleAdmin: true,
+    });
+    await connection.query('COMMIT');
+  } catch (error) {
+    await connection.query('ROLLBACK');
+    throw error;
+  } finally {
+    connection.release();
+  }
   await writeAudit(req.user.email, 'vehicle_request', requestNumber, 'create', {});
-  res.status(201).json(mapVehicleRequest(rows[0]));
+  res.status(201).json(mapVehicleRequest(created));
 });
 
 app.patch('/api/vehicle-requests/:id', async (req, res) => {
@@ -676,6 +801,13 @@ app.patch('/api/vehicle-requests/:id', async (req, res) => {
       `UPDATE vehicle_requests SET ${changes.join(', ')} WHERE id = $${values.length} RETURNING ${vehicleColumns}`,
       values,
     );
+    if (status !== current.current_status_key) {
+      if (status === 'Approved') {
+        await insertUserNotification(connection, current.requester_email, 'request_approved', 'vehicle_request', current.request_number);
+      } else if (['RejectedVehicleNotAvailable', 'RejectedPlantDirector'].includes(status)) {
+        await insertUserNotification(connection, current.requester_email, 'request_rejected', 'vehicle_request', current.request_number);
+      }
+    }
     await connection.query('COMMIT');
     await writeAudit(req.user.email, 'vehicle_request', current.request_number, 'update', body);
     res.json(mapVehicleRequest(rows[0]));
@@ -849,6 +981,30 @@ async function writeAudit(actorEmail, entityType, entityId, action, details) {
   await pool.query(
     'INSERT INTO audit_log (actor_email, entity_type, entity_id, action, details) VALUES ($1, $2, $3, $4, $5)',
     [actorEmail, entityType, String(entityId), action, JSON.stringify(details)],
+  );
+}
+
+async function insertRoleNotifications(client, {
+  eventType,
+  relatedEntityType,
+  relatedEntityId,
+  vehicleAdmin = false,
+  mealAdmin = false,
+}) {
+  await client.query(
+    `INSERT INTO user_notifications (user_id, event_type, related_entity_type, related_entity_id)
+     SELECT id, $1, $2, $3 FROM users
+     WHERE is_active = TRUE
+       AND (($4::BOOLEAN AND vehicle_admin = TRUE) OR ($5::BOOLEAN AND meal_admin = TRUE))`,
+    [eventType, relatedEntityType, relatedEntityId, vehicleAdmin, mealAdmin],
+  );
+}
+
+async function insertUserNotification(client, email, eventType, relatedEntityType, relatedEntityId) {
+  await client.query(
+    `INSERT INTO user_notifications (user_id, event_type, related_entity_type, related_entity_id)
+     SELECT id, $2, $3, $4 FROM users WHERE LOWER(email) = LOWER($1)`,
+    [email, eventType, relatedEntityType, relatedEntityId],
   );
 }
 

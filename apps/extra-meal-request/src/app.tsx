@@ -21,6 +21,8 @@ import VehicleAdminPage from '@/pages/vehicle-admin';
 
 import RequesterGuidePage from '@/pages/requester-guide';
 import UserManagementPage from '@/pages/user-management';
+import PendingApprovalsPage from '@/pages/pending-approvals';
+import NotificationsPage from '@/pages/notifications';
 import LoginPage from '@/pages/login';
 import ProfilePage from '@/pages/profile';
 import ChangePasswordPage from '@/pages/change-password';
@@ -48,6 +50,8 @@ function App() {
                       <Route path="request-kendaraan" element={<VehicleRequestPage />} />
                       <Route path="request-extra-meal" element={<NewRequestPage />} />
                       <Route path="panduan-requester" element={<RequesterGuidePage />} />
+                      <Route path="inbox/approvals" element={<PendingApprovalsPage />} />
+                      <Route path="inbox/notifications" element={<NotificationsPage />} />
                       <Route path="request/:id" element={<RequestDetailPage />} />
                       <Route path="admin-kendaraan" element={<AdminRoute role="vehicle"><VehicleAdminPage /></AdminRoute>} />
                       <Route path="admin-meal" element={<AdminRoute role="meal"><AdminMonitoringPage /></AdminRoute>} />
