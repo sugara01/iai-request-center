@@ -14,7 +14,7 @@ export type InboxApproval = {
 
 export type UserNotification = {
   id: number;
-  eventType: 'request_assigned' | 'request_approved' | 'request_rejected' | 'password_reset';
+  eventType: 'request_assigned' | 'request_submitted' | 'request_approved' | 'request_rejected' | 'password_changed' | 'password_reset';
   relatedEntityType?: string;
   relatedEntityId?: string;
   createdAt: string;
@@ -26,15 +26,42 @@ type NotificationsResponse = { items: UserNotification[]; unreadCount: number };
 const approvalsKey = ['inbox-approvals'] as const;
 const notificationsKey = ['user-notifications'] as const;
 
+function getRequestTypeLabel(
+  notification: UserNotification,
+  t: (key: string, values?: Record<string, string | number>) => string,
+) {
+  return t(notification.relatedEntityType === 'vehicle_request' ? 'Request Kendaraan' : 'Request Extra Meal');
+}
+
+export function getNotificationTitle(
+  notification: UserNotification,
+  t: (key: string, values?: Record<string, string | number>) => string,
+) {
+  if (notification.eventType === 'request_assigned') {
+    return t('{{requestType}} baru untuk ditinjau', { requestType: getRequestTypeLabel(notification, t) });
+  }
+  if (notification.eventType === 'request_submitted') return t('{{requestType}} dikirim', { requestType: getRequestTypeLabel(notification, t) });
+  if (notification.eventType === 'request_approved') return t('{{requestType}} disetujui', { requestType: getRequestTypeLabel(notification, t) });
+  if (notification.eventType === 'request_rejected') return t('{{requestType}} ditolak', { requestType: getRequestTypeLabel(notification, t) });
+  if (notification.eventType === 'password_changed') return t('Password Diubah');
+  return t('Password Direset');
+}
+
 export function getNotificationText(
   notification: UserNotification,
   t: (key: string, values?: Record<string, string | number>) => string,
 ) {
-  const values = { requestId: notification.relatedEntityId ?? '' };
-  if (notification.eventType === 'request_assigned') return t('Request {{requestId}} baru ditugaskan untuk ditinjau.', values);
-  if (notification.eventType === 'request_approved') return t('Request {{requestId}} telah disetujui.', values);
-  if (notification.eventType === 'request_rejected') return t('Request {{requestId}} telah ditolak.', values);
-  return t('Password akun Anda telah direset. Silakan masuk dan ubah password.');
+  if (notification.eventType === 'password_changed') return t('Password akun Anda berhasil diubah.');
+  if (notification.eventType === 'password_reset') return t('Password akun Anda telah direset. Silakan masuk dan ubah password.');
+
+  const values = {
+    requestId: notification.relatedEntityId ?? '',
+    requestType: getRequestTypeLabel(notification, t),
+  };
+  if (notification.eventType === 'request_assigned') return t('{{requestType}} {{requestId}} menunggu peninjauan.', values);
+  if (notification.eventType === 'request_submitted') return t('{{requestType}} {{requestId}} berhasil dikirim.', values);
+  if (notification.eventType === 'request_approved') return t('{{requestType}} {{requestId}} telah disetujui.', values);
+  return t('{{requestType}} {{requestId}} telah ditolak.', values);
 }
 
 export function useInboxApprovals(enabled = true) {
@@ -95,7 +122,27 @@ export function useMarkNotificationRead() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => apiRequest(`/notifications/${id}/read`, { method: 'PATCH' }),
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: notificationsKey }),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: notificationsKey });
+      const previousData = queryClient.getQueryData<NotificationsResponse>(notificationsKey);
+      const notification = previousData?.items.find((item) => item.id === id);
+
+      if (previousData && notification && !notification.readAt) {
+        queryClient.setQueryData<NotificationsResponse>(notificationsKey, {
+          ...previousData,
+          items: previousData.items.map((item) => item.id === id ? { ...item, readAt: new Date().toISOString() } : item),
+          unreadCount: Math.max(0, previousData.unreadCount - 1),
+        });
+      }
+
+      return { previousData };
+    },
+    onError: (_error, _id, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(notificationsKey, context.previousData);
+      }
+    },
+    onSettled: () => void queryClient.invalidateQueries({ queryKey: notificationsKey }),
   });
 }
 

@@ -48,6 +48,21 @@ test('maps notification IDs and nullable fields to the API response shape', () =
   assert.equal(notification.readAt, undefined);
 });
 
+test('maps requester submission and password-change notification event types', () => {
+  for (const eventType of ['request_submitted', 'password_changed']) {
+    const notification = mapUserNotification({
+      id: '8',
+      event_type: eventType,
+      related_entity_type: eventType === 'request_submitted' ? 'vehicle_request' : 'user',
+      related_entity_id: eventType === 'request_submitted' ? 'RQ2611260100' : 'user@example.com',
+      created_at: '2026-11-26T08:00:00.000Z',
+      read_at: null,
+    });
+
+    assert.equal(notification.eventType, eventType);
+  }
+});
+
 test('only keeps meal groups actionable while at least one service date is pending', () => {
   assert.equal(mealGroupHasPendingApproval([{ current_status: 'Submitted' }, { current_status: 'Approved' }]), true);
   assert.equal(mealGroupHasPendingApproval([{ current_status: 'Approved' }, { current_status: 'Rejected' }]), false);

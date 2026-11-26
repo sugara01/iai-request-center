@@ -251,6 +251,7 @@ app.post('/api/auth/change-password', async (req, res) => {
       'UPDATE auth_sessions SET revoked_at = NOW() WHERE user_id = $1 AND id <> $2 AND revoked_at IS NULL',
       [req.user.id, req.user.sessionId],
     );
+    await insertUserNotification(client, req.user.email, 'password_changed', 'user', req.user.email);
     await client.query('COMMIT');
   } catch (error) {
     await client.query('ROLLBACK');
@@ -545,6 +546,7 @@ app.post('/api/meal-requests', async (req, res) => {
       );
       created.push(result.rows[0]);
     }
+    await insertUserNotification(connection, req.user.email, 'request_submitted', 'meal_request', requestId);
     await insertRoleNotifications(connection, {
       eventType: 'request_assigned',
       relatedEntityType: 'meal_request',
@@ -594,6 +596,14 @@ app.patch('/api/meal-requests/:requestId/status', async (req, res) => {
         'meal_request',
         req.params.requestId,
       );
+      await insertRoleNotifications(connection, {
+        eventType: status === 'Approved' ? 'request_approved' : 'request_rejected',
+        relatedEntityType: 'meal_request',
+        relatedEntityId: req.params.requestId,
+        mealAdmin: true,
+        excludeUserId: req.user.id,
+        excludeEmail: current[0].requester_email,
+      });
     }
     await connection.query('COMMIT');
   } catch (error) {
@@ -709,6 +719,7 @@ app.post('/api/vehicle-requests', async (req, res) => {
       ],
     );
     created = rows[0];
+    await insertUserNotification(connection, req.user.email, 'request_submitted', 'vehicle_request', requestNumber);
     await insertRoleNotifications(connection, {
       eventType: 'request_assigned',
       relatedEntityType: 'vehicle_request',
@@ -804,8 +815,24 @@ app.patch('/api/vehicle-requests/:id', async (req, res) => {
     if (status !== current.current_status_key) {
       if (status === 'Approved') {
         await insertUserNotification(connection, current.requester_email, 'request_approved', 'vehicle_request', current.request_number);
+        await insertRoleNotifications(connection, {
+          eventType: 'request_approved',
+          relatedEntityType: 'vehicle_request',
+          relatedEntityId: current.request_number,
+          vehicleAdmin: true,
+          excludeUserId: req.user.id,
+          excludeEmail: current.requester_email,
+        });
       } else if (['RejectedVehicleNotAvailable', 'RejectedPlantDirector'].includes(status)) {
         await insertUserNotification(connection, current.requester_email, 'request_rejected', 'vehicle_request', current.request_number);
+        await insertRoleNotifications(connection, {
+          eventType: 'request_rejected',
+          relatedEntityType: 'vehicle_request',
+          relatedEntityId: current.request_number,
+          vehicleAdmin: true,
+          excludeUserId: req.user.id,
+          excludeEmail: current.requester_email,
+        });
       }
     }
     await connection.query('COMMIT');
@@ -990,13 +1017,17 @@ async function insertRoleNotifications(client, {
   relatedEntityId,
   vehicleAdmin = false,
   mealAdmin = false,
+  excludeUserId = null,
+  excludeEmail = null,
 }) {
   await client.query(
     `INSERT INTO user_notifications (user_id, event_type, related_entity_type, related_entity_id)
      SELECT id, $1, $2, $3 FROM users
      WHERE is_active = TRUE
-       AND (($4::BOOLEAN AND vehicle_admin = TRUE) OR ($5::BOOLEAN AND meal_admin = TRUE))`,
-    [eventType, relatedEntityType, relatedEntityId, vehicleAdmin, mealAdmin],
+       AND (($4::BOOLEAN AND vehicle_admin = TRUE) OR ($5::BOOLEAN AND meal_admin = TRUE))
+       AND ($6::BIGINT IS NULL OR id <> $6)
+       AND ($7::TEXT IS NULL OR LOWER(email) <> LOWER($7))`,
+    [eventType, relatedEntityType, relatedEntityId, vehicleAdmin, mealAdmin, excludeUserId, excludeEmail],
   );
 }
 

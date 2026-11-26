@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getNotificationText, useMarkAllNotificationsRead, useMarkNotificationRead, useUserNotifications, type UserNotification } from '@/hooks/use-inbox';
+import { getNotificationText, getNotificationTitle, useMarkAllNotificationsRead, useMarkNotificationRead, useUserNotifications, type UserNotification } from '@/hooks/use-inbox';
 import { useLanguage } from '@/lib/localization';
 
 function formatNotificationDate(value: string, locale: string) {
@@ -20,9 +20,10 @@ export default function NotificationsPage() {
   const items = data?.items ?? [];
   const unreadCount = data?.unreadCount ?? 0;
 
-  async function markOne(id: number) {
+  async function markOne(notification: UserNotification) {
+    if (notification.readAt) return;
     try {
-      await markRead.mutateAsync(id);
+      await markRead.mutateAsync(notification.id);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t('Notifikasi gagal diperbarui.'));
     }
@@ -62,21 +63,28 @@ export default function NotificationsPage() {
           ) : isPending ? (
             <div className="space-y-3" aria-hidden="true"><Skeleton className="h-16 w-full" /><Skeleton className="h-16 w-full" /></div>
           ) : items.length === 0 ? (
-            <div className="rounded-lg border border-dashed p-10 text-center text-sm text-muted-foreground">{t('Belum ada notifikasi.')}</div>
+            <div className="rounded-lg border border-dashed p-10 text-center text-sm text-muted-foreground">{t('Tidak ada notifikasi tersedia.')}</div>
           ) : (
             <ul className="divide-y">
               {items.map((notification: UserNotification) => (
                 <li key={notification.id} className="flex flex-wrap items-center justify-between gap-4 py-4 first:pt-0 last:pb-0">
-                  <div className="flex min-w-0 items-start gap-3">
+                  <button
+                    type="button"
+                    className="flex min-w-0 flex-1 items-start gap-3 text-left outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-ring"
+                    aria-label={notification.readAt ? getNotificationTitle(notification, t) : `${t('Tandai dibaca')}: ${getNotificationTitle(notification, t)}`}
+                    disabled={!notification.readAt && markRead.isPending}
+                    onClick={() => void markOne(notification)}
+                  >
                     <span className={`mt-1 size-2 shrink-0 rounded-full ${notification.readAt ? 'bg-muted' : 'bg-primary'}`} aria-label={notification.readAt ? t('Sudah dibaca') : t('Belum dibaca')} />
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium">{getNotificationText(notification, t)}</p>
-                      <p className="mt-1 text-xs text-muted-foreground">{formatNotificationDate(notification.createdAt, locale)}</p>
-                    </div>
-                  </div>
+                    <span className="min-w-0">
+                      <span className="block text-sm font-medium">{getNotificationTitle(notification, t)}</span>
+                      <span className="mt-1 block text-sm text-muted-foreground">{getNotificationText(notification, t)}</span>
+                      <span className="mt-1 block text-xs text-muted-foreground">{formatNotificationDate(notification.createdAt, locale)}</span>
+                    </span>
+                  </button>
                   <div className="flex items-center gap-2">
                     <Badge variant={notification.readAt ? 'outline' : 'default'}>{notification.readAt ? t('Sudah dibaca') : t('Belum dibaca')}</Badge>
-                    {!notification.readAt && <Button variant="outline" size="sm" disabled={markRead.isPending} onClick={() => void markOne(notification.id)}>{t('Tandai dibaca')}</Button>}
+                    {!notification.readAt && <Button variant="outline" size="sm" disabled={markRead.isPending} onClick={() => void markOne(notification)}>{t('Tandai dibaca')}</Button>}
                   </div>
                 </li>
               ))}

@@ -55,13 +55,46 @@ CREATE TABLE IF NOT EXISTS user_notifications (
   id BIGSERIAL PRIMARY KEY,
   user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   event_type TEXT NOT NULL CHECK (event_type IN (
-    'request_assigned', 'request_approved', 'request_rejected', 'password_reset'
+    'request_assigned', 'request_submitted', 'request_approved', 'request_rejected',
+    'password_changed', 'password_reset'
   )),
   related_entity_type TEXT,
   related_entity_id TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   read_at TIMESTAMPTZ
 );
+
+DO $migration$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid = 'user_notifications'::regclass
+      AND conname = 'user_notifications_event_type_check'
+      AND (
+        POSITION('request_submitted' IN pg_get_constraintdef(oid)) = 0
+        OR POSITION('password_changed' IN pg_get_constraintdef(oid)) = 0
+      )
+  ) THEN
+    ALTER TABLE user_notifications
+      DROP CONSTRAINT user_notifications_event_type_check;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conrelid = 'user_notifications'::regclass
+      AND conname = 'user_notifications_event_type_check'
+  ) THEN
+    ALTER TABLE user_notifications
+      ADD CONSTRAINT user_notifications_event_type_check
+      CHECK (event_type IN (
+        'request_assigned', 'request_submitted', 'request_approved', 'request_rejected',
+        'password_changed', 'password_reset'
+      ));
+  END IF;
+END
+$migration$;
 
 CREATE INDEX IF NOT EXISTS user_notifications_user_created_idx
   ON user_notifications (user_id, created_at DESC, id DESC);
