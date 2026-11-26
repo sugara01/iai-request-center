@@ -1,0 +1,27 @@
+# Node.js
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Environment files
+.env
+.env.local
+.env.production
+
+# Logs
+*.log
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# PostgreSQL backups
+*.dump
+*.bak
+*.sql.bak
+
+# OS files
+Thumbs.db
+.DS_Store
