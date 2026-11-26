@@ -5,7 +5,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently --names api,vite --prefix-colors cyan,green \"npm run dev --prefix server\" \"vite\"",
     "build": "tsc -p tsconfig.app.json --noEmit && vite build",
     "check:fast": "concurrently --names 'tsgo,esbuild,lint,css' --prefix-colors 'blue,green,yellow,magenta' 'tsgo -p tsconfig.app.json --noEmit' 'esbuild src/main.tsx --bundle --format=esm --jsx=automatic --external:*.css --external:*.scss --external:*.sass --external:tailwindcss --external:tw-animate-css --log-level=error > /dev/null' 'bun lint' 'bun --bun tailwindcss -i src/index.css >/dev/null'",
     "check": "concurrently --names 'tsgo,esbuild,lint,css' --prefix-colors 'blue,green,yellow,magenta' 'tsgo -p tsconfig.app.json --noEmit' 'esbuild src/main.tsx --bundle --format=esm --jsx=automatic --external:*.css --external:*.scss --external:*.sass --external:tailwindcss --external:tw-animate-css --log-level=error > /dev/null' 'bun lint' 'bun --bun tailwindcss -i src/index.css >/dev/null'",
