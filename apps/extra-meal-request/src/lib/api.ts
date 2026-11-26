@@ -1,21 +1,14 @@
-const DEMO_USER_KEY = 'iai-demo-user';
-
-export function getDemoUserEmail() {
-  return localStorage.getItem(DEMO_USER_KEY) ?? 'ayu.lestari@example.com';
-}
-
-export function setDemoUserEmail(email: string) {
-  localStorage.setItem(DEMO_USER_KEY, email);
+if (typeof window !== 'undefined') {
+  window.localStorage.removeItem('iai-demo-user');
 }
 
 export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T> {
+  const headers = new Headers(init?.headers);
+  if (!headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
   const response = await fetch(`/api${path}`, {
     ...init,
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Demo-User': getDemoUserEmail(),
-      ...init?.headers,
-    },
+    credentials: 'same-origin',
+    headers,
   });
   if (!response.ok) {
     let message = `Request failed (${response.status}).`;

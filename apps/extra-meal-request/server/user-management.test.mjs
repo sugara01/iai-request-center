@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DEFAULT_USER_PASSWORD, CsvImportError, hashPassword, parseUserCsv } from './user-management.mjs';
+import { DEFAULT_USER_PASSWORD, CsvImportError, hashPassword, parseUserCsv, verifyPassword } from './user-management.mjs';
 
 test('hashPassword stores a salted scrypt hash instead of the password', async () => {
   const firstHash = await hashPassword(DEFAULT_USER_PASSWORD);
@@ -9,6 +9,14 @@ test('hashPassword stores a salted scrypt hash instead of the password', async (
   assert.match(firstHash, /^scrypt\$32768\$[0-9a-f]{32}\$[0-9a-f]{128}$/);
   assert.notEqual(firstHash, secondHash);
   assert.ok(!firstHash.includes(DEFAULT_USER_PASSWORD));
+});
+
+test('verifyPassword accepts matching scrypt hashes and rejects wrong or malformed values', async () => {
+  const passwordHash = await hashPassword('correct horse');
+
+  assert.equal(await verifyPassword('correct horse', passwordHash), true);
+  assert.equal(await verifyPassword('wrong password', passwordHash), false);
+  assert.equal(await verifyPassword('correct horse', 'not-a-hash'), false);
 });
 
 test('parseUserCsv accepts Active Directory headers, quoted commas, and optional permissions', () => {

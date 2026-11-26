@@ -34,6 +34,18 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE UNIQUE INDEX IF NOT EXISTS users_username_lower_idx
   ON users (LOWER(username));
 
+CREATE TABLE IF NOT EXISTS auth_sessions (
+  id UUID PRIMARY KEY,
+  user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  expires_at TIMESTAMPTZ NOT NULL,
+  revoked_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS auth_sessions_user_active_idx
+  ON auth_sessions (user_id, expires_at)
+  WHERE revoked_at IS NULL;
+
 CREATE TABLE IF NOT EXISTS vehicle_requests (
   id BIGSERIAL PRIMARY KEY,
   request_number TEXT NOT NULL UNIQUE,

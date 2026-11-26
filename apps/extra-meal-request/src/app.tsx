@@ -6,6 +6,7 @@ import { ThemeProvider } from 'next-themes';
 import { LanguageProvider } from '@/lib/localization';
 import Layout from '@/pages/_layout';
 import { AdminRoute } from '@/components/admin-route';
+import { AuthRoute } from '@/components/auth-route';
 import { queryClient } from '@/lib/query-client';
 import { Toaster } from '@/components/ui/sonner';
 import ErrorBoundary from '@/components/system/error-boundary';
@@ -21,6 +22,9 @@ import VehicleAdminPage from '@/pages/vehicle-admin';
 import RequesterGuidePage from '@/pages/requester-guide';
 import AdminAccessPage from '@/pages/admin-access';
 import UserManagementPage from '@/pages/user-management';
+import LoginPage from '@/pages/login';
+import ProfilePage from '@/pages/profile';
+import ChangePasswordPage from '@/pages/change-password';
 import PowerAutomateGuidePage from '@/pages/power-automate-guide';
 
 import NotFoundPage from '@/pages/not-found';
@@ -37,7 +41,9 @@ function App() {
                 <Toaster richColors />
                 <Router>
                   <Routes>
-                    <Route path="/" element={<Layout />}>
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/change-password" element={<AuthRoute><ChangePasswordPage /></AuthRoute>} />
+                    <Route path="/" element={<AuthRoute><Layout /></AuthRoute>}>
                       <Route index element={<HomePage />} />
                       <Route path="buat-request" element={<RequestCenterPage />} />
                       <Route path="request-kendaraan" element={<VehicleRequestPage />} />
@@ -49,6 +55,7 @@ function App() {
                       <Route path="panduan-power-automate" element={<AdminRoute role="request-admin"><PowerAutomateGuidePage /></AdminRoute>} />
                       <Route path="kelola-admin" element={<AdminRoute role="super"><AdminAccessPage /></AdminRoute>} />
                       <Route path="kelola-pengguna" element={<AdminRoute role="user-admin"><UserManagementPage /></AdminRoute>} />
+                      <Route path="profile" element={<ProfilePage />} />
                       <Route path="*" element={<NotFoundPage />} />
                     </Route>
                   </Routes>

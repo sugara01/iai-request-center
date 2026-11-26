@@ -58,7 +58,7 @@ const english: Record<string, string> = {
   'Tambahan': 'Additional Request', 'Catatan atau Tambahan dari requester': 'Requester notes or additional information', 'Pemicu Approval': 'Approval Trigger', 'Ya': 'Yes', 'Tidak': 'No',
   'Dashboard': 'Dashboard', 'Request saya': 'My requests', 'Request Saya': 'My requests', 'Semua Request': 'All requests',
   'User: {{name}}': 'User: {{name}}', 'Lingkup request': 'Request scope',
-  'Ganti pengguna demo': 'Switch demo user', 'Pilih pengguna demo': 'Choose demo user', 'Memuat pengguna': 'Loading user',
+  'Memuat pengguna': 'Loading user',
   'Tampilkan/sembunyikan menu navigasi': 'Toggle navigation menu',
   'Menampilkan {{visible}} dari {{total}} pengajuan milik {{name}} ({{email}}).': 'Showing {{visible}} of {{total}} requests for {{name}} ({{email}}).',
   'Menampilkan {{visible}} dari {{total}} pengajuan milik semua requester.': 'Showing {{visible}} of {{total}} requests for all requesters.',

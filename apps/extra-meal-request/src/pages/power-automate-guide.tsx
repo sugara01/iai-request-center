@@ -97,12 +97,12 @@ const guideCopy: Record<'id' | 'en', GuideCopy> = {
       'For Extra Meal, one approval trigger represents every service date in the Request ID group.',
       'Apply Extra Meal outcomes to every record sharing the same Request ID.',
       'Approvals and admin notifications run in the application; email is not configured.',
-      'Local demo sign-in is for development only and must be replaced before deployment.',
+      'Sign-in uses the application user directory and revocable JWT sessions.',
     ],
     notificationTitle: 'Requester notification policy',
     notificationBody: 'Email is not enabled in this configuration. Submitted, Pending Plant Director Approval, Approved, Rejected, corrections, and Cancelled remain visible in the application.',
     boundaryTitle: 'Responsibility boundary',
-    boundaryBody: 'The application owns input, progress display, role-based review, corrections, group status, Cancel rules, and approval notes. PostgreSQL stores requests, admin access, and audit data. Local demo authentication is not for production.',
+    boundaryBody: 'The application owns input, progress display, role-based review, corrections, group status, Cancel rules, and approval notes. PostgreSQL stores requests, user permissions, revocable authentication sessions, and audit data.',
   },
 };
 

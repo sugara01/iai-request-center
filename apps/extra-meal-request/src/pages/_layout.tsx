@@ -1,5 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { BookOpenCheck, CarFront, Check, ChevronDown, ClipboardList, Gauge, Languages, ShieldCheck, SquarePen, Users, Workflow } from 'lucide-react';
+import { BookOpenCheck, CarFront, Check, ChevronDown, ClipboardList, Gauge, Languages, LogOut, ShieldCheck, SquarePen, Users, Workflow } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -7,10 +9,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { AdminNotificationCenter, useAdminNotificationCounts } from '@/components/admin-notification-center';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { UserIdentity } from '@/components/user-identity';
-import { useDemoUsers, useUser } from '@/hooks/use-user';
+import { useUser } from '@/hooks/use-user';
 import { useAdminAuthorization } from '@/hooks/use-admin-access';
 import { useLanguage, type Language } from '@/lib/localization';
-import { getDemoUserEmail, setDemoUserEmail } from '@/lib/api';
+import { apiRequest } from '@/lib/api';
+import { toast } from 'sonner';
 
 const requesterLinks = [
   { to: '/', label: 'Dashboard Saya', icon: Gauge },
@@ -20,7 +23,8 @@ const requesterLinks = [
 export default function Layout() {
   const { language, setLanguage, t } = useLanguage();
   const { data: user, isPending: isUserPending } = useUser();
-  const { data: demoUsers = [] } = useDemoUsers();
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const email = user?.userPrincipalName;
   const { isVehicleAdmin, isMealAdmin, isITAdmin, isSuperAdmin, isPending: isAccessPending } = useAdminAuthorization(email);
   const notificationCounts = useAdminNotificationCounts(isVehicleAdmin, isMealAdmin);
@@ -32,6 +36,15 @@ export default function Layout() {
     ...(isITAdmin || isSuperAdmin ? [{ to: '/kelola-pengguna', label: t('Kelola Pengguna'), icon: Users }] : []),
   ];
   const localizedRequesterLinks = requesterLinks.map((link: typeof requesterLinks[number]) => ({ ...link, label: t(link.label) }));
+  const logout = async () => {
+    try {
+      await apiRequest('/auth/logout', { method: 'POST' });
+      queryClient.clear();
+      navigate('/login', { replace: true });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Could not sign out.');
+    }
+  };
   const renderLinks = (links: Array<{ to: string; label: string; icon: typeof Gauge; count?: number }>) => links.map(({ to, label, icon: Icon, count }: { to: string; label: string; icon: typeof Gauge; count?: number }) => <SidebarMenuItem key={to}><SidebarMenuButton asChild><NavLink to={to} end={to === '/'} className={({ isActive }: { isActive: boolean }) => isActive ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : ''}><Icon /><span>{label}</span>{Boolean(count) && <Badge className="ml-auto min-w-5 justify-center px-1 text-xs">{count && count > 99 ? '99+' : count}</Badge>}</NavLink></SidebarMenuButton></SidebarMenuItem>);
   const languageMenu = <DropdownMenu><DropdownMenuTrigger asChild><Button variant="outline" size="sm" className="gap-2" data-i18n-ignore><Languages className="size-4" /><span>{language === 'id' ? 'Bahasa Indonesia' : 'English'}</span><ChevronDown className="size-4" /></Button></DropdownMenuTrigger><DropdownMenuContent align="end" data-i18n-ignore>{([{ value: 'id', label: 'Bahasa Indonesia' }, { value: 'en', label: 'English' }] as const).map((option: { value: Language; label: string }) => <DropdownMenuItem key={option.value} onClick={() => setLanguage(option.value)}><span className="w-5">{language === option.value && <Check className="size-4" />}</span>{option.label}</DropdownMenuItem>)}</DropdownMenuContent></DropdownMenu>;
   return (
@@ -63,7 +76,7 @@ export default function Layout() {
             <div className="mx-3 mt-auto mb-4 rounded-lg bg-sidebar-accent p-3 text-left text-sidebar-foreground">
               <p className="text-xs font-medium">Database</p>
               <p className="mt-2 text-xs">PostgreSQL • Docker Desktop</p>
-              <p className="mt-3 border-t border-sidebar-border pt-2 text-[11px]">Local demo mode</p>
+              <p className="mt-3 border-t border-sidebar-border pt-2 text-[11px]">Authenticated account</p>
             </div>
           </SidebarContent>
         </Sidebar>
@@ -75,18 +88,14 @@ export default function Layout() {
             {languageMenu}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button type="button" className="rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label={t('Ganti pengguna demo')}>
+                <button type="button" className="rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label={t('Menu profil pengguna')}>
                   {user ? <UserIdentity user={user} /> : <span className="rounded-xl border bg-card px-3 py-2 text-sm">{t('Memuat pengguna')}...</span>}
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-72">
-                <DropdownMenuLabel>{t('Pilih pengguna demo')}</DropdownMenuLabel>
-                {demoUsers.map((demoUser) => (
-                  <DropdownMenuItem key={demoUser.email} onSelect={() => { if (demoUser.email !== (user?.userPrincipalName ?? getDemoUserEmail())) { setDemoUserEmail(demoUser.email); window.location.reload(); } }} className="items-start py-2">
-                    <span className="mt-1 flex size-4 shrink-0 items-center justify-center">{demoUser.email === (user?.userPrincipalName ?? getDemoUserEmail()) && <Check className="size-3.5" />}</span>
-                    <span className="flex min-w-0 flex-col"><span className="truncate font-medium">{demoUser.fullName}</span><span className="truncate text-xs text-muted-foreground">{demoUser.email}</span></span>
-                  </DropdownMenuItem>
-                ))}
+                <DropdownMenuLabel>{user?.email}</DropdownMenuLabel>
+                <DropdownMenuItem asChild><NavLink to="/profile">{t('Profil')}</NavLink></DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => { void logout(); }}><LogOut className="mr-2 size-4" />{t('Keluar')}</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

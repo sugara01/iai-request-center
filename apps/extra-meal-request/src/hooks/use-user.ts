@@ -1,32 +1,26 @@
 import { useQuery } from '@tanstack/react-query';
-import { apiRequest, getDemoUserEmail } from '@/lib/api';
+import { apiRequest } from '@/lib/api';
 
 export type AppUser = {
   userPrincipalName: string;
+  email: string;
   fullName: string;
+  department: string | null;
+  jobTitle: string | null;
   role: 'User' | 'ITAdmin' | 'SuperAdmin';
   isITAdmin: boolean;
   isVehicleAdmin: boolean;
   isMealAdmin: boolean;
   isSuperAdmin: boolean;
   isApproverDoa: boolean;
+  mustChangePassword: boolean;
 };
 
-export type DemoUser = { email: string; fullName: string };
-
 export function useUser() {
-  const email = getDemoUserEmail();
   return useQuery({
-    queryKey: ['session', email],
+    queryKey: ['session'],
     queryFn: () => apiRequest<AppUser>('/session'),
     staleTime: 60_000,
-  });
-}
-
-export function useDemoUsers() {
-  return useQuery({
-    queryKey: ['demo-users'],
-    queryFn: () => apiRequest<DemoUser[]>('/demo-users'),
-    staleTime: Infinity,
+    retry: false,
   });
 }

@@ -1,4 +1,4 @@
-import { randomBytes, scrypt } from 'node:crypto';
+import { randomBytes, scrypt, timingSafeEqual } from 'node:crypto';
 import { promisify } from 'node:util';
 
 export const DEFAULT_USER_PASSWORD = 'ineos123';
@@ -14,6 +14,20 @@ export async function hashPassword(password) {
     maxmem: 64 * 1024 * 1024,
   });
   return `scrypt$32768$${salt.toString('hex')}$${Buffer.from(derivedKey).toString('hex')}`;
+}
+
+export async function verifyPassword(password, passwordHash) {
+  const match = /^scrypt\$32768\$([0-9a-f]{32})\$([0-9a-f]{128})$/i.exec(passwordHash);
+  if (!match) return false;
+  const salt = Buffer.from(match[1], 'hex');
+  const expected = Buffer.from(match[2], 'hex');
+  const derivedKey = await scryptAsync(password, salt, expected.length, {
+    N: 32_768,
+    r: 8,
+    p: 1,
+    maxmem: 64 * 1024 * 1024,
+  });
+  return timingSafeEqual(Buffer.from(derivedKey), expected);
 }
 
 export class CsvImportError extends Error {}

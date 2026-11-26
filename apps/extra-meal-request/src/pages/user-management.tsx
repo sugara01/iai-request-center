@@ -84,7 +84,6 @@ export default function UserManagementPage() {
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['users'] }),
-        queryClient.invalidateQueries({ queryKey: ['demo-users'] }),
         queryClient.invalidateQueries({ queryKey: ['session'] }),
       ]);
       toast.success(t(editingId ? 'Data pengguna diperbarui' : 'Pengguna berhasil ditambahkan'));
@@ -101,7 +100,6 @@ export default function UserManagementPage() {
     onSuccess: async (user) => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['users'] }),
-        queryClient.invalidateQueries({ queryKey: ['demo-users'] }),
         queryClient.invalidateQueries({ queryKey: ['session'] }),
       ]);
       toast.success(t(user.isActive ? 'Pengguna diaktifkan' : 'Pengguna dinonaktifkan'));
@@ -125,7 +123,6 @@ export default function UserManagementPage() {
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['users'] }),
-        queryClient.invalidateQueries({ queryKey: ['demo-users'] }),
       ]);
     },
     onError: (error: Error) => toast.error(error.message),

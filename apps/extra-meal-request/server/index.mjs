@@ -1,12 +1,19 @@
 import { readFile } from 'node:fs/promises';
+import { randomUUID } from 'node:crypto';
 import { createServer } from 'node:http';
 import express from 'express';
 import pg from 'pg';
-import { CsvImportError, DEFAULT_USER_PASSWORD, hashPassword, parseUserCsv } from './user-management.mjs';
+import { CsvImportError, DEFAULT_USER_PASSWORD, hashPassword, parseUserCsv, verifyPassword } from './user-management.mjs';
+import {
+  clearSessionCookie,
+  createAuthMiddleware,
+  createSessionToken,
+  SESSION_TTL_MS,
+  setSessionCookie,
+} from './auth.mjs';
 
 const { Pool } = pg;
 const port = Number(process.env.API_PORT ?? 3001);
-const demoAuthEnabled = process.env.NODE_ENV !== 'production' && process.env.ALLOW_DEMO_AUTH !== 'false';
 const validUserRoles = new Set(['User', 'ITAdmin', 'SuperAdmin']);
 const managedUserColumns = `id, username, email, display_name, department, job_title,
   is_active, must_change_password, role, vehicle_admin, meal_admin, approver_doa,
@@ -14,14 +21,7 @@ const managedUserColumns = `id, username, email, display_name, department, job_t
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL ?? 'postgres://iai_app:local-dev-only@localhost:5434/iai_request_center',
 });
-
-const demoUsers = [
-  { email: 'ayu.lestari@example.com', fullName: 'Ayu Lestari' },
-  { email: 'aris.kristanto@ineos.com', fullName: 'Aris Kristanto' },
-  { email: 'defiani.defiani@ineos.com', fullName: 'Defiani' },
-  { email: 'sri.aditia.demo@local.test', fullName: 'Sri Aditia (demo)' },
-  { email: 'riyan.sugara@ineos.com', fullName: 'Riyan Sugara', jobTitle: 'IT Project & Developer' },
-];
+const dummyPasswordHash = await hashPassword('invalid-login-placeholder');
 const vehicleColumns = `id, request_number, requester_name, requester_email, department_key,
   pickup_date::TEXT AS pickup_date, pickup_time, pickup_point, destination_key, destination_other,
   purpose, requester_note, passenger_count, current_status_key, admin_decision_key, admin_note,
@@ -42,51 +42,137 @@ app.get('/api/health', async (_req, res) => {
   res.json({ status: 'ok', database: 'postgresql' });
 });
 
-app.get('/api/demo-users', async (_req, res) => {
-  if (!demoAuthEnabled) throw new HttpError(404, 'Local demo sign-in is disabled.');
-  const { rows } = await pool.query('SELECT email, display_name FROM users WHERE is_active = TRUE ORDER BY email');
-  const users = new Map(demoUsers.map((user) => [user.email, user]));
-  for (const row of rows) {
-    users.set(row.email, { email: row.email, fullName: row.display_name });
-  }
-  res.json([...users.values()]);
-});
+const loginFailures = new Map();
+const loginWindowMs = 15 * 60 * 1000;
+const maxLoginFailures = 5;
 
-app.use('/api', async (req, _res, next) => {
-  if (!demoAuthEnabled) return next(new HttpError(503, 'Demo authentication is disabled. Configure production authentication before deployment.'));
-  const email = String(req.header('x-demo-user') ?? '').trim().toLowerCase();
+app.post('/api/auth/login', async (req, res) => {
+  const email = String(req.body?.email ?? '').trim().toLowerCase();
+  const password = typeof req.body?.password === 'string' ? req.body.password : '';
+  if (!email || email.length > 254 || !password || password.length > 1024) {
+    throw new HttpError(400, 'Email and password are required.');
+  }
+  const attemptKey = `${req.ip}:${email}`;
+  const attempts = loginFailures.get(attemptKey) ?? [];
+  const recentAttempts = attempts.filter((timestamp) => Date.now() - timestamp < loginWindowMs);
+  if (recentAttempts.length >= maxLoginFailures) {
+    loginFailures.set(attemptKey, recentAttempts);
+    throw new HttpError(429, 'Too many sign-in attempts. Try again in 15 minutes.');
+  }
+
   const { rows } = await pool.query(
-    'SELECT email, display_name, job_title, is_active FROM users WHERE email = $1',
+    `SELECT id, username, email, display_name, department, job_title, password_hash,
+            is_active, must_change_password, role, vehicle_admin, meal_admin, approver_doa
+     FROM users WHERE LOWER(email) = $1`,
     [email],
   );
   const user = rows[0];
-  if (user && !user.is_active) return next(new HttpError(403, 'This user account is disabled.'));
-  const demoUser = demoUsers.find((candidate) => candidate.email === email);
-  if (!user && !demoUser) return next(new HttpError(401, 'Select a valid local demo user.'));
-  req.demoUser = user
-    ? { email: user.email, fullName: user.display_name, jobTitle: user.job_title }
-    : demoUser;
-  next();
+  const passwordMatches = await verifyPassword(password, user?.password_hash ?? dummyPasswordHash);
+  if (!user || !user.is_active || !passwordMatches) {
+    recentAttempts.push(Date.now());
+    loginFailures.set(attemptKey, recentAttempts);
+    if (loginFailures.size > 10_000) {
+      for (const [key, timestamps] of loginFailures) {
+        if (timestamps.every((timestamp) => Date.now() - timestamp >= loginWindowMs)) loginFailures.delete(key);
+      }
+    }
+    throw new HttpError(401, 'Email or password is incorrect.');
+  }
+
+  loginFailures.delete(attemptKey);
+  const sessionId = randomUUID();
+  const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query('UPDATE users SET last_login = NOW() WHERE id = $1', [user.id]);
+    await client.query(
+      'INSERT INTO auth_sessions (id, user_id, expires_at) VALUES ($1, $2, $3)',
+      [sessionId, user.id, expiresAt],
+    );
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+  const token = await createSessionToken(user.id, sessionId);
+  setSessionCookie(res, token);
+  res.json(mapAppUser(user));
+});
+
+app.use('/api', createAuthMiddleware(pool));
+
+app.post('/api/auth/logout', async (req, res) => {
+  await pool.query('UPDATE auth_sessions SET revoked_at = NOW() WHERE id = $1 AND revoked_at IS NULL', [req.user.sessionId]);
+  clearSessionCookie(res);
+  res.json({ message: 'Signed out.' });
 });
 
 app.get('/api/session', async (req, res) => {
+  res.json(mapAppUser(req.user));
+});
+
+app.get('/api/profile', async (req, res) => {
   const { rows } = await pool.query(
-    `SELECT role, vehicle_admin, meal_admin, approver_doa
-     FROM users WHERE email = $1 AND is_active = TRUE`,
-    [req.demoUser.email],
+    `SELECT username, email, display_name, department, job_title, role,
+            vehicle_admin, meal_admin, approver_doa, created_at, last_login
+     FROM users WHERE id = $1`,
+    [req.user.id],
   );
-  const access = rows[0] ?? {};
-  res.json({
-    userPrincipalName: req.demoUser.email,
-    fullName: req.demoUser.fullName,
-    jobTitle: req.demoUser.jobTitle ?? null,
-    role: access.role ?? 'User',
-    isITAdmin: access.role === 'ITAdmin',
-    isVehicleAdmin: Boolean(access.vehicle_admin),
-    isMealAdmin: Boolean(access.meal_admin),
-    isSuperAdmin: access.role === 'SuperAdmin',
-    isApproverDoa: Boolean(access.approver_doa),
-  });
+  res.json(mapUserProfile(rows[0]));
+});
+
+app.patch('/api/profile', async (req, res) => {
+  const displayName = requireString(req.body?.displayName, 'Display name', 150);
+  const department = optionalString(req.body?.department, 'Department', 100);
+  const jobTitle = optionalString(req.body?.jobTitle, 'Job title', 150);
+  const { rows } = await pool.query(
+    `UPDATE users SET display_name = $2, department = $3, job_title = $4, updated_at = NOW()
+     WHERE id = $1
+     RETURNING username, email, display_name, department, job_title, role,
+               vehicle_admin, meal_admin, approver_doa, created_at, last_login`,
+    [req.user.id, displayName, department, jobTitle],
+  );
+  await writeAudit(req.user.email, 'user', req.user.email, 'update_profile', {});
+  res.json(mapUserProfile(rows[0]));
+});
+
+app.post('/api/auth/change-password', async (req, res) => {
+  const currentPassword = typeof req.body?.currentPassword === 'string' ? req.body.currentPassword : '';
+  const newPassword = typeof req.body?.newPassword === 'string' ? req.body.newPassword : '';
+  if (!currentPassword || newPassword.length < 8 || newPassword.length > 128) {
+    throw new HttpError(400, 'Enter your current password and a new password of 8 to 128 characters.');
+  }
+  if (currentPassword === newPassword) {
+    throw new HttpError(400, 'Your new password must be different from your current password.');
+  }
+  const { rows } = await pool.query('SELECT password_hash FROM users WHERE id = $1', [req.user.id]);
+  if (!await verifyPassword(currentPassword, rows[0].password_hash)) {
+    throw new HttpError(400, 'Current password is incorrect.');
+  }
+  const passwordHash = await hashPassword(newPassword);
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query(
+      'UPDATE users SET password_hash = $2, must_change_password = FALSE, updated_at = NOW() WHERE id = $1',
+      [req.user.id, passwordHash],
+    );
+    await client.query(
+      'UPDATE auth_sessions SET revoked_at = NOW() WHERE user_id = $1 AND id <> $2 AND revoked_at IS NULL',
+      [req.user.id, req.user.sessionId],
+    );
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+  await writeAudit(req.user.email, 'user', req.user.email, 'change_password', {});
+  res.json({ message: 'Password changed successfully.' });
 });
 
 app.get('/api/users', async (req, res) => {
@@ -114,7 +200,7 @@ app.post('/api/users', async (req, res) => {
       user.role, user.vehicleAdmin, user.mealAdmin, user.approverDoa,
     ],
   );
-  await writeAudit(req.demoUser.email, 'user', user.email, 'create', { role: user.role });
+  await writeAudit(req.user.email, 'user', user.email, 'create', { role: user.role });
   res.status(201).json(mapManagedUser(rows[0]));
 });
 
@@ -146,7 +232,7 @@ app.patch('/api/users/:id', async (req, res) => {
       user.role, user.vehicleAdmin, user.mealAdmin, user.approverDoa,
     ],
   );
-  await writeAudit(req.demoUser.email, 'user', rows[0].email, 'update', {
+  await writeAudit(req.user.email, 'user', rows[0].email, 'update', {
     role: user.role,
     vehicleAdmin: user.vehicleAdmin,
     mealAdmin: user.mealAdmin,
@@ -164,7 +250,7 @@ app.patch('/api/users/:id/status', async (req, res) => {
   if (actorRole !== 'SuperAdmin' && current.role === 'SuperAdmin') {
     throw new HttpError(403, 'Only a SuperAdmin can change a SuperAdmin account status.');
   }
-  if (!isActive && current.email === req.demoUser.email) {
+  if (!isActive && current.email === req.user.email) {
     throw new HttpError(400, 'You cannot disable the account currently administering users.');
   }
   if (!isActive && current.role === 'SuperAdmin') await requireAnotherSuperAdmin(id);
@@ -174,7 +260,13 @@ app.patch('/api/users/:id/status', async (req, res) => {
      WHERE id = $1 RETURNING ${managedUserColumns}`,
     [id, isActive],
   );
-  await writeAudit(req.demoUser.email, 'user', rows[0].email, isActive ? 'enable' : 'disable', {});
+  if (!isActive) {
+    await pool.query(
+      'UPDATE auth_sessions SET revoked_at = NOW() WHERE user_id = $1 AND revoked_at IS NULL',
+      [id],
+    );
+  }
+  await writeAudit(req.user.email, 'user', rows[0].email, isActive ? 'enable' : 'disable', {});
   res.json(mapManagedUser(rows[0]));
 });
 
@@ -187,12 +279,28 @@ app.post('/api/users/:id/reset-password', async (req, res) => {
     throw new HttpError(403, 'Only a SuperAdmin can reset a SuperAdmin password.');
   }
   const passwordHash = await hashPassword(DEFAULT_USER_PASSWORD);
-  const { rows } = await pool.query(
-    `UPDATE users SET password_hash = $2, must_change_password = TRUE, updated_at = NOW()
-     WHERE id = $1 RETURNING email`,
-    [id, passwordHash],
-  );
-  await writeAudit(req.demoUser.email, 'user', rows[0].email, 'reset_password', {});
+  const client = await pool.connect();
+  let email;
+  try {
+    await client.query('BEGIN');
+    const { rows } = await client.query(
+      `UPDATE users SET password_hash = $2, must_change_password = TRUE, updated_at = NOW()
+       WHERE id = $1 RETURNING email`,
+      [id, passwordHash],
+    );
+    email = rows[0].email;
+    await client.query(
+      'UPDATE auth_sessions SET revoked_at = NOW() WHERE user_id = $1 AND revoked_at IS NULL',
+      [id],
+    );
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+  await writeAudit(req.user.email, 'user', email, 'reset_password', {});
   res.json({ message: 'Password reset to the initial password; it must be changed at first login.' });
 });
 
@@ -274,7 +382,7 @@ app.post(
       client.release();
     }
 
-    await writeAudit(req.demoUser.email, 'user', 'csv-import', 'upsert', { created, updated });
+    await writeAudit(req.user.email, 'user', 'csv-import', 'upsert', { created, updated });
     res.json({ created, updated });
   },
 );
@@ -316,7 +424,7 @@ app.put('/api/admin-access/:email', async (req, res) => {
       [email, email, passwordHash, vehicleAdmin, mealAdmin],
     ));
   }
-  await writeAudit(req.demoUser.email, 'admin_access', email, 'upsert', { vehicleAdmin, mealAdmin });
+  await writeAudit(req.user.email, 'admin_access', email, 'upsert', { vehicleAdmin, mealAdmin });
   res.json(mapAdminAccess(rows[0]));
 });
 
@@ -330,13 +438,13 @@ app.delete('/api/admin-access/:id', async (req, res) => {
     [id],
   );
   if (!rows[0]) throw new HttpError(404, 'Admin access record was not found or cannot be revoked.');
-  await writeAudit(req.demoUser.email, 'admin_access', rows[0].email, 'delete', {});
+  await writeAudit(req.user.email, 'admin_access', rows[0].email, 'delete', {});
   res.status(204).end();
 });
 
 app.get('/api/meal-requests', async (req, res) => {
   const isAdmin = await hasRole(req, 'meal_admin');
-  const values = isAdmin ? [] : [req.demoUser.email];
+  const values = isAdmin ? [] : [req.user.email];
   const where = isAdmin ? '' : 'WHERE LOWER(requester_email) = LOWER($1)';
   const { rows } = await pool.query(
     `SELECT id, request_id, record_id, service_date::TEXT AS service_date, requester_name, requester_email,
@@ -363,8 +471,8 @@ app.post('/api/meal-requests', async (req, res) => {
     const created = [];
     for (let index = 0; index < records.length; index += 1) {
       const request = records[index];
-      if (String(request.requesterEmail ?? '').trim().toLowerCase() !== req.demoUser.email) {
-        throw new HttpError(403, 'You can only submit requests for the selected demo user.');
+      if (String(request.requesterEmail ?? '').trim().toLowerCase() !== req.user.email) {
+        throw new HttpError(403, 'You can only submit requests for your own account.');
       }
       const serviceDate = requireDate(request.serviceDate, 'serviceDate');
       const startDate = requireDate(request.startDate, 'startDate');
@@ -375,7 +483,7 @@ app.post('/api/meal-requests', async (req, res) => {
         `${requestId}-${serviceDate.replaceAll('-', '')}`,
         serviceDate,
         requireString(request.requester, 'requester', 160),
-        req.demoUser.email,
+        req.user.email,
         requireString(request.department, 'department', 120),
         requireString(request.purpose, 'purpose', 500),
         startDate,
@@ -400,7 +508,7 @@ app.post('/api/meal-requests', async (req, res) => {
       created.push(result.rows[0]);
     }
     await connection.query('COMMIT');
-    await writeAudit(req.demoUser.email, 'meal_request', requestId, 'create_group', { recordCount: created.length });
+    await writeAudit(req.user.email, 'meal_request', requestId, 'create_group', { recordCount: created.length });
     res.status(201).json(created.map(mapMealRequest));
   } catch (error) {
     await connection.query('ROLLBACK');
@@ -422,7 +530,7 @@ app.patch('/api/meal-requests/:requestId/status', async (req, res) => {
     [req.params.requestId, status],
   );
   if (rows.length === 0) throw new HttpError(404, 'Meal request group was not found.');
-  await writeAudit(req.demoUser.email, 'meal_request', req.params.requestId, 'update_group_status', { status });
+  await writeAudit(req.user.email, 'meal_request', req.params.requestId, 'update_group_status', { status });
   res.json(rows.map(mapMealRequest));
 });
 
@@ -438,7 +546,7 @@ app.patch('/api/meal-requests/:requestId/quantity', async (req, res) => {
     [req.params.requestId, recordId, quantity],
   );
   if (!rows[0]) throw new HttpError(404, 'Meal service-date record was not found.');
-  await writeAudit(req.demoUser.email, 'meal_request', recordId, 'update_quantity', { quantity });
+  await writeAudit(req.user.email, 'meal_request', recordId, 'update_quantity', { quantity });
   res.json(mapMealRequest(rows[0]));
 });
 
@@ -463,7 +571,7 @@ app.post('/api/meal-requests/:requestId/cancel', async (req, res) => {
       [req.params.requestId],
     );
     await connection.query('COMMIT');
-    await writeAudit(req.demoUser.email, 'meal_request', req.params.requestId, 'cancel_group', { recordCount: rows.length });
+    await writeAudit(req.user.email, 'meal_request', req.params.requestId, 'cancel_group', { recordCount: rows.length });
     res.json(rows.map(mapMealRequest));
   } catch (error) {
     await connection.query('ROLLBACK');
@@ -478,13 +586,13 @@ app.delete('/api/meal-records/:id', async (req, res) => {
   const id = parseId(req.params.id);
   const { rows } = await pool.query('DELETE FROM meal_requests WHERE id = $1 RETURNING record_id', [id]);
   if (!rows[0]) throw new HttpError(404, 'Meal service-date record was not found.');
-  await writeAudit(req.demoUser.email, 'meal_request', rows[0].record_id, 'delete_record', {});
+  await writeAudit(req.user.email, 'meal_request', rows[0].record_id, 'delete_record', {});
   res.status(204).end();
 });
 
 app.get('/api/vehicle-requests', async (req, res) => {
   const isAdmin = await hasRole(req, 'vehicle_admin');
-  const values = isAdmin ? [] : [req.demoUser.email];
+  const values = isAdmin ? [] : [req.user.email];
   const where = isAdmin ? '' : 'WHERE LOWER(requester_email) = LOWER($1)';
   const { rows } = await pool.query(
     `SELECT ${vehicleColumns} FROM vehicle_requests ${where} ORDER BY created_at DESC, id DESC`,
@@ -495,8 +603,8 @@ app.get('/api/vehicle-requests', async (req, res) => {
 
 app.post('/api/vehicle-requests', async (req, res) => {
   const request = req.body;
-  if (String(request.emailPemohon ?? '').trim().toLowerCase() !== req.demoUser.email) {
-    throw new HttpError(403, 'You can only submit requests for the selected demo user.');
+  if (String(request.emailPemohon ?? '').trim().toLowerCase() !== req.user.email) {
+    throw new HttpError(403, 'You can only submit requests for your own account.');
   }
   const sequence = Number((await pool.query("SELECT nextval('vehicle_request_number_seq') AS value")).rows[0].value);
   const now = new Date();
@@ -511,7 +619,7 @@ app.post('/api/vehicle-requests', async (req, res) => {
     [
       requestNumber,
       requireString(request.namaPemohon, 'namaPemohon', 160),
-      req.demoUser.email,
+      req.user.email,
       requireString(request.departemenKey, 'departemenKey', 80),
       requireDate(request.tanggal, 'tanggal'),
       requireString(request.jam, 'jam', 10),
@@ -523,7 +631,7 @@ app.post('/api/vehicle-requests', async (req, res) => {
       requirePositiveInteger(request.jumlahPenumpang, 'jumlahPenumpang'),
     ],
   );
-  await writeAudit(req.demoUser.email, 'vehicle_request', requestNumber, 'create', {});
+  await writeAudit(req.user.email, 'vehicle_request', requestNumber, 'create', {});
   res.status(201).json(mapVehicleRequest(rows[0]));
 });
 
@@ -603,7 +711,7 @@ app.patch('/api/vehicle-requests/:id', async (req, res) => {
       values,
     );
     await connection.query('COMMIT');
-    await writeAudit(req.demoUser.email, 'vehicle_request', current.request_number, 'update', body);
+    await writeAudit(req.user.email, 'vehicle_request', current.request_number, 'update', body);
     res.json(mapVehicleRequest(rows[0]));
   } catch (error) {
     await connection.query('ROLLBACK');
@@ -618,7 +726,7 @@ app.delete('/api/vehicle-requests/:id', async (req, res) => {
   const id = parseId(req.params.id);
   const { rows } = await pool.query('DELETE FROM vehicle_requests WHERE id = $1 RETURNING request_number', [id]);
   if (!rows[0]) throw new HttpError(404, 'Vehicle request was not found.');
-  await writeAudit(req.demoUser.email, 'vehicle_request', rows[0].request_number, 'delete', {});
+  await writeAudit(req.user.email, 'vehicle_request', rows[0].request_number, 'delete', {});
   res.status(204).end();
 });
 
@@ -742,7 +850,7 @@ function parseId(value) {
 async function hasRole(req, role) {
   const { rows } = await pool.query(
     `SELECT role, vehicle_admin, meal_admin FROM users WHERE email = $1 AND is_active = TRUE`,
-    [req.demoUser.email],
+    [req.user.email],
   );
   const user = rows[0];
   if (!user) return false;
@@ -759,7 +867,7 @@ async function requireRole(req, role) {
 async function requireUserAdmin(req) {
   const { rows } = await pool.query(
     'SELECT role FROM users WHERE email = $1 AND is_active = TRUE',
-    [req.demoUser.email],
+    [req.user.email],
   );
   const role = rows[0]?.role;
   if (role !== 'ITAdmin' && role !== 'SuperAdmin') {
@@ -804,6 +912,40 @@ function mapManagedUser(row) {
   };
 }
 
+function mapAppUser(user) {
+  const role = user.role ?? 'User';
+  return {
+    userPrincipalName: user.email,
+    email: user.email,
+    fullName: user.display_name ?? user.displayName,
+    department: user.department ?? null,
+    jobTitle: user.job_title ?? user.jobTitle ?? null,
+    role,
+    isITAdmin: role === 'ITAdmin',
+    isVehicleAdmin: Boolean(user.vehicle_admin ?? user.vehicleAdmin),
+    isMealAdmin: Boolean(user.meal_admin ?? user.mealAdmin),
+    isSuperAdmin: role === 'SuperAdmin',
+    isApproverDoa: Boolean(user.approver_doa ?? user.approverDoa),
+    mustChangePassword: Boolean(user.must_change_password ?? user.mustChangePassword),
+  };
+}
+
+function mapUserProfile(row) {
+  return {
+    username: row.username,
+    email: row.email,
+    displayName: row.display_name,
+    department: row.department,
+    jobTitle: row.job_title,
+    role: row.role,
+    isVehicleAdmin: row.vehicle_admin,
+    isMealAdmin: row.meal_admin,
+    isApproverDoa: row.approver_doa,
+    createdAt: row.created_at,
+    lastLogin: row.last_login,
+  };
+}
+
 async function getManagedUser(id) {
   const { rows } = await pool.query(
     `SELECT ${managedUserColumns} FROM users WHERE id = $1`,
@@ -825,30 +967,25 @@ async function migrateAdminAccess() {
   const { rows: accessRows } = await pool.query(
     'SELECT email, vehicle_admin, meal_admin, super_admin FROM admin_access ORDER BY id',
   );
-  const legacyUsers = new Map(demoUsers.map((user) => [user.email, {
-    email: user.email,
-    vehicle_admin: false,
-    meal_admin: false,
-    super_admin: false,
-  }]));
-  for (const row of accessRows) legacyUsers.set(row.email, row);
-  const usersToMigrate = [...legacyUsers.values()];
 
   const { rows: existingRows } = await pool.query(
     'SELECT email FROM users WHERE email = ANY($1::TEXT[])',
-    [usersToMigrate.map((row) => row.email)],
+    [accessRows.map((row) => row.email)],
   );
   const existingEmails = new Set(existingRows.map((row) => row.email));
-  const missingRows = usersToMigrate.filter((row) => !existingEmails.has(row.email));
+  const missingRows = accessRows.filter((row) => !existingEmails.has(row.email));
+  await pool.query(
+    `UPDATE users
+     SET role = 'SuperAdmin', vehicle_admin = TRUE, meal_admin = TRUE, approver_doa = TRUE
+     WHERE LOWER(email) = 'riyan.sugara@ineos.com'`,
+  );
   if (missingRows.length === 0) return;
 
-  const names = new Map(demoUsers.map((user) => [user.email, user]));
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
     for (const row of missingRows) {
       const email = row.email.toLowerCase();
-      const knownUser = names.get(email);
       const passwordHash = await hashPassword(DEFAULT_USER_PASSWORD);
       await client.query(
         `INSERT INTO users (
@@ -860,8 +997,8 @@ async function migrateAdminAccess() {
         [
           email,
           email,
-          knownUser?.fullName ?? email,
-          knownUser?.jobTitle ?? null,
+          email,
+          null,
           passwordHash,
           row.super_admin ? 'SuperAdmin' : 'User',
           row.vehicle_admin,
