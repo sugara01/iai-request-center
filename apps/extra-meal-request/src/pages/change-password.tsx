@@ -3,6 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { useUser } from '@/hooks/use-user';
 import { apiRequest } from '@/lib/api';
+import { toast } from 'sonner';
+
+const passwordRules = [
+  { label: 'At least 8 characters', test: (password: string) => password.length >= 8 },
+  { label: 'No more than 128 characters', test: (password: string) => password.length <= 128 },
+  { label: 'At least one uppercase letter', test: (password: string) => /[A-Z]/.test(password) },
+  { label: 'At least one lowercase letter', test: (password: string) => /[a-z]/.test(password) },
+  { label: 'At least one number', test: (password: string) => /\d/.test(password) },
+];
 
 export default function ChangePasswordPage() {
   const [currentPassword, setCurrentPassword] = useState('');
@@ -21,6 +30,10 @@ export default function ChangePasswordPage() {
       setError('New password and confirmation do not match.');
       return;
     }
+    if (passwordRules.some((rule) => !rule.test(newPassword))) {
+      setError('New password must meet all the requirements below.');
+      return;
+    }
     setIsSubmitting(true);
     try {
       await apiRequest('/auth/change-password', {
@@ -28,6 +41,7 @@ export default function ChangePasswordPage() {
         body: JSON.stringify({ currentPassword, newPassword }),
       });
       if (user) queryClient.setQueryData(['session'], { ...user, mustChangePassword: false });
+      toast.success('Password changed successfully.');
       navigate('/', { replace: true });
     } catch (changeError) {
       setError(changeError instanceof Error ? changeError.message : 'Password change failed.');
@@ -56,6 +70,13 @@ export default function ChangePasswordPage() {
             Confirm new password
             <input autoComplete="new-password" className="h-10 w-full rounded-md border bg-background px-3 font-normal" type="password" minLength={8} maxLength={128} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} required />
           </label>
+          <ul className="space-y-1 text-xs text-muted-foreground" aria-label="Password requirements">
+            {passwordRules.map((rule) => (
+              <li key={rule.label} className={rule.test(newPassword) ? 'text-emerald-700 dark:text-emerald-400' : undefined}>
+                {rule.test(newPassword) ? '✓' : '•'} {rule.label}
+              </li>
+            ))}
+          </ul>
           {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
           <button className="h-10 w-full rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground disabled:opacity-60" type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Saving…' : 'Save new password'}

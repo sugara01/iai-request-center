@@ -1,15 +1,28 @@
+import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { BookOpenCheck, CarFront, Check, ChevronDown, ClipboardList, Gauge, Languages, LogOut, ShieldCheck, SquarePen, Users, Workflow } from 'lucide-react';
+import { BookOpenCheck, CarFront, Check, ChevronDown, ClipboardList, Gauge, KeyRound, Languages, LogOut, Presentation, ShieldCheck, SquarePen, UserRound, Users, Workflow } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { AdminNotificationCenter, useAdminNotificationCounts } from '@/components/admin-notification-center';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { UserIdentity } from '@/components/user-identity';
-import { useUser } from '@/hooks/use-user';
+import { useUser, type AppUser } from '@/hooks/use-user';
 import { useAdminAuthorization } from '@/hooks/use-admin-access';
 import { useLanguage, type Language } from '@/lib/localization';
 import { apiRequest } from '@/lib/api';
@@ -20,25 +33,46 @@ const requesterLinks = [
   { to: '/buat-request', label: 'Buat Request', icon: SquarePen },
   { to: '/panduan-requester', label: 'Panduan Requester', icon: BookOpenCheck },
 ];
+
+type DemoViewRole = 'User' | 'Approver' | 'Vehicle Admin' | 'Meal Admin';
+
+const demoViewRoles: DemoViewRole[] = ['User', 'Approver', 'Vehicle Admin', 'Meal Admin'];
+
+function roleBadgeClass(role: AppUser['role']) {
+  if (role === 'SuperAdmin') return 'border-orange-200 bg-orange-100 text-orange-800 dark:border-orange-900 dark:bg-orange-950 dark:text-orange-200';
+  if (role === 'ITAdmin') return 'border-blue-200 bg-blue-100 text-blue-800 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-200';
+  return 'border-slate-200 bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300';
+}
+
+function roleBadgeLabel(role: AppUser['role']) {
+  if (role === 'SuperAdmin') return 'SUPER ADMIN';
+  if (role === 'ITAdmin') return 'IT ADMIN';
+  return 'USER';
+}
+
 export default function Layout() {
   const { language, setLanguage, t } = useLanguage();
   const { data: user, isPending: isUserPending } = useUser();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const [demoRole, setDemoRole] = useState<DemoViewRole | null>(null);
   const email = user?.userPrincipalName;
   const { isVehicleAdmin, isMealAdmin, isITAdmin, isSuperAdmin, isPending: isAccessPending } = useAdminAuthorization(email);
   const notificationCounts = useAdminNotificationCounts(isVehicleAdmin, isMealAdmin);
+  const showVehicleAdmin = demoRole ? demoRole === 'Vehicle Admin' : isVehicleAdmin;
+  const showMealAdmin = demoRole ? demoRole === 'Meal Admin' : isMealAdmin;
   const adminLinks = [
-    ...(isVehicleAdmin ? [{ to: '/admin-kendaraan', label: t('Admin Kendaraan'), icon: CarFront, count: notificationCounts.vehicle }] : []),
-    ...(isMealAdmin ? [{ to: '/admin-meal', label: t('Admin Extra Meal'), icon: ClipboardList, count: notificationCounts.meal }] : []),
-    ...(isVehicleAdmin || isMealAdmin ? [{ to: '/panduan-power-automate', label: t('Workflow Request'), icon: Workflow }] : []),
-    ...(isSuperAdmin ? [{ to: '/kelola-admin', label: t('Kelola Admin'), icon: ShieldCheck }] : []),
-    ...(isITAdmin || isSuperAdmin ? [{ to: '/kelola-pengguna', label: t('Kelola Pengguna'), icon: Users }] : []),
+    ...(showVehicleAdmin ? [{ to: '/admin-kendaraan', label: t('Admin Kendaraan'), icon: CarFront, count: notificationCounts.vehicle }] : []),
+    ...(showMealAdmin ? [{ to: '/admin-meal', label: t('Admin Extra Meal'), icon: ClipboardList, count: notificationCounts.meal }] : []),
+    ...(showVehicleAdmin || showMealAdmin ? [{ to: '/panduan-power-automate', label: t('Workflow Request'), icon: Workflow }] : []),
+    ...(!demoRole && isSuperAdmin ? [{ to: '/kelola-admin', label: t('Kelola Admin'), icon: ShieldCheck }] : []),
+    ...(!demoRole && (isITAdmin || isSuperAdmin) ? [{ to: '/kelola-pengguna', label: t('Kelola Pengguna'), icon: Users }] : []),
   ];
   const localizedRequesterLinks = requesterLinks.map((link: typeof requesterLinks[number]) => ({ ...link, label: t(link.label) }));
   const logout = async () => {
     try {
       await apiRequest('/auth/logout', { method: 'POST' });
+      setDemoRole(null);
       queryClient.clear();
       navigate('/login', { replace: true });
     } catch (error) {
@@ -81,9 +115,18 @@ export default function Layout() {
           </SidebarContent>
         </Sidebar>
         <main className="min-w-0 flex-1 overflow-x-hidden">
+          {demoRole && (
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-amber-300 bg-amber-100 px-4 py-3 text-amber-950 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100">
+              <div>
+                <p className="text-sm font-bold tracking-wide">DEMO MODE ACTIVE</p>
+                <p className="text-sm">Viewing application as: <span className="font-semibold">{demoRole}</span></p>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => setDemoRole(null)}>{t('Keluar dari Mode Demo')}</Button>
+            </div>
+          )}
           <div className="flex flex-wrap items-center justify-end gap-2 border-b bg-card p-3 text-card-foreground">
             <SidebarTrigger className="mr-auto" aria-label={t('Tampilkan/sembunyikan menu navigasi')} title={t('Tampilkan/sembunyikan menu navigasi')} />
-            {!isUserPending && !isAccessPending && (isVehicleAdmin || isMealAdmin) && <AdminNotificationCenter isVehicleAdmin={isVehicleAdmin} isMealAdmin={isMealAdmin} />}
+            {!demoRole && !isUserPending && !isAccessPending && (isVehicleAdmin || isMealAdmin) && <AdminNotificationCenter isVehicleAdmin={isVehicleAdmin} isMealAdmin={isMealAdmin} />}
             <ThemeToggle />
             {languageMenu}
             <DropdownMenu>
@@ -93,9 +136,37 @@ export default function Layout() {
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-72">
-                <DropdownMenuLabel>{user?.email}</DropdownMenuLabel>
-                <DropdownMenuItem asChild><NavLink to="/profile">{t('Profil')}</NavLink></DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => { void logout(); }}><LogOut className="mr-2 size-4" />{t('Keluar')}</DropdownMenuItem>
+                <DropdownMenuLabel className="font-normal">
+                  <span className="block truncate font-semibold text-foreground">{user?.fullName}</span>
+                  <span className="block truncate text-xs text-muted-foreground">{user?.email}</span>
+                  {user && <Badge className={`mt-2 ${roleBadgeClass(user.role)}`}>{roleBadgeLabel(user.role)}</Badge>}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <NavLink to="/profile"><UserRound />{t('Lihat Profil')}</NavLink>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <NavLink to="/change-password"><KeyRound />{t('Ubah Password')}</NavLink>
+                </DropdownMenuItem>
+                {isSuperAdmin && (
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger><Presentation />{t('Mode Demo')}</DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent>
+                      <DropdownMenuRadioGroup
+                        value={demoRole ?? ''}
+                        onValueChange={(value) => {
+                          if (demoViewRoles.includes(value as DemoViewRole)) setDemoRole(value as DemoViewRole);
+                        }}
+                      >
+                        {demoViewRoles.map((role) => (
+                          <DropdownMenuRadioItem key={role} value={role}>{role}</DropdownMenuRadioItem>
+                        ))}
+                      </DropdownMenuRadioGroup>
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={() => { void logout(); }}><LogOut />{t('Keluar')}</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

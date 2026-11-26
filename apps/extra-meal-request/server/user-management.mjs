@@ -30,6 +30,15 @@ export async function verifyPassword(password, passwordHash) {
   return timingSafeEqual(Buffer.from(derivedKey), expected);
 }
 
+export function isPasswordPolicySatisfied(password) {
+  return typeof password === 'string'
+    && password.length >= 8
+    && password.length <= 128
+    && /[A-Z]/.test(password)
+    && /[a-z]/.test(password)
+    && /\d/.test(password);
+}
+
 export class CsvImportError extends Error {}
 
 function parseCsvRows(csv) {

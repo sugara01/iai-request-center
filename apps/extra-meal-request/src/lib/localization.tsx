@@ -10,6 +10,8 @@ const english: Record<string, string> = {
   'Dashboard Saya': 'My Dashboard', 'Buat Request': 'Create Request', 'Panduan Requester': 'Requester Guide',
   'Admin Kendaraan': 'Vehicle Admin', 'Admin Extra Meal': 'Extra Meal Admin', 'Workflow Request': 'Request Workflow', 'Kelola Admin': 'Manage Admins',
   'Kelola Pengguna': 'Manage Users', 'Administrasi sistem': 'System administration',
+  'Lihat Profil': 'View Profile', 'Ubah Password': 'Change Password', 'Mode Demo': 'Demo Mode',
+  'Keluar dari Mode Demo': 'Exit Demo Mode', 'Keluar': 'Sign Out',
   'Kelola akun, role, dan izin workflow kendaraan, extra meal, serta DoA.': 'Manage accounts, roles, and vehicle, extra meal, and DoA workflow permissions.',
   'Impor pengguna dari CSV Active Directory': 'Import users from Active Directory CSV',
   'Kolom yang didukung: username/sAMAccountName, email/mail/userPrincipalName, display_name, department, job_title/title, role, vehicle_admin, meal_admin, approver_doa. Password pengguna baru adalah password awal dan wajib diganti saat login tersedia.': 'Supported columns: username/sAMAccountName, email/mail/userPrincipalName, display_name, department, job_title/title, role, vehicle_admin, meal_admin, approver_doa. New users receive the initial password and must change it when login is available.',

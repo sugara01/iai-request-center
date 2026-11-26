@@ -3,7 +3,14 @@ import { randomUUID } from 'node:crypto';
 import { createServer } from 'node:http';
 import express from 'express';
 import pg from 'pg';
-import { CsvImportError, DEFAULT_USER_PASSWORD, hashPassword, parseUserCsv, verifyPassword } from './user-management.mjs';
+import {
+  CsvImportError,
+  DEFAULT_USER_PASSWORD,
+  hashPassword,
+  isPasswordPolicySatisfied,
+  parseUserCsv,
+  verifyPassword,
+} from './user-management.mjs';
 import {
   clearSessionCookie,
   createAuthMiddleware,
@@ -85,7 +92,10 @@ app.post('/api/auth/login', async (req, res) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    await client.query('UPDATE users SET last_login = NOW() WHERE id = $1', [user.id]);
+    await client.query(
+      'UPDATE users SET last_login = NOW(), login_count = login_count + 1 WHERE id = $1',
+      [user.id],
+    );
     await client.query(
       'INSERT INTO auth_sessions (id, user_id, expires_at) VALUES ($1, $2, $3)',
       [sessionId, user.id, expiresAt],
@@ -117,7 +127,8 @@ app.get('/api/session', async (req, res) => {
 app.get('/api/profile', async (req, res) => {
   const { rows } = await pool.query(
     `SELECT username, email, display_name, department, job_title, role,
-            vehicle_admin, meal_admin, approver_doa, created_at, last_login
+            vehicle_admin, meal_admin, approver_doa, is_active, must_change_password,
+            created_at, last_login, password_changed_at, login_count
      FROM users WHERE id = $1`,
     [req.user.id],
   );
@@ -132,7 +143,8 @@ app.patch('/api/profile', async (req, res) => {
     `UPDATE users SET display_name = $2, department = $3, job_title = $4, updated_at = NOW()
      WHERE id = $1
      RETURNING username, email, display_name, department, job_title, role,
-               vehicle_admin, meal_admin, approver_doa, created_at, last_login`,
+               vehicle_admin, meal_admin, approver_doa, is_active, must_change_password,
+               created_at, last_login, password_changed_at, login_count`,
     [req.user.id, displayName, department, jobTitle],
   );
   await writeAudit(req.user.email, 'user', req.user.email, 'update_profile', {});
@@ -142,8 +154,9 @@ app.patch('/api/profile', async (req, res) => {
 app.post('/api/auth/change-password', async (req, res) => {
   const currentPassword = typeof req.body?.currentPassword === 'string' ? req.body.currentPassword : '';
   const newPassword = typeof req.body?.newPassword === 'string' ? req.body.newPassword : '';
-  if (!currentPassword || newPassword.length < 8 || newPassword.length > 128) {
-    throw new HttpError(400, 'Enter your current password and a new password of 8 to 128 characters.');
+  if (!currentPassword) throw new HttpError(400, 'Current password is required.');
+  if (!isPasswordPolicySatisfied(newPassword)) {
+    throw new HttpError(400, 'New password must be 8 to 128 characters and include an uppercase letter, a lowercase letter, and a number.');
   }
   if (currentPassword === newPassword) {
     throw new HttpError(400, 'Your new password must be different from your current password.');
@@ -157,7 +170,10 @@ app.post('/api/auth/change-password', async (req, res) => {
   try {
     await client.query('BEGIN');
     await client.query(
-      'UPDATE users SET password_hash = $2, must_change_password = FALSE, updated_at = NOW() WHERE id = $1',
+      `UPDATE users
+       SET password_hash = $2, must_change_password = FALSE,
+           password_changed_at = NOW(), updated_at = NOW()
+       WHERE id = $1`,
       [req.user.id, passwordHash],
     );
     await client.query(
@@ -191,9 +207,10 @@ app.post('/api/users', async (req, res) => {
   const { rows } = await queryUserWrite(
     `INSERT INTO users (
        username, email, display_name, department, job_title, password_hash,
-       is_active, must_change_password, role, vehicle_admin, meal_admin, approver_doa
+       is_active, must_change_password, role, vehicle_admin, meal_admin, approver_doa,
+       password_changed_at
      )
-     VALUES ($1, $2, $3, $4, $5, $6, TRUE, TRUE, $7, $8, $9, $10)
+     VALUES ($1, $2, $3, $4, $5, $6, TRUE, TRUE, $7, $8, $9, $10, NOW())
      RETURNING ${managedUserColumns}`,
     [
       user.username, user.email, user.displayName, user.department, user.jobTitle, passwordHash,
@@ -284,7 +301,8 @@ app.post('/api/users/:id/reset-password', async (req, res) => {
   try {
     await client.query('BEGIN');
     const { rows } = await client.query(
-      `UPDATE users SET password_hash = $2, must_change_password = TRUE, updated_at = NOW()
+      `UPDATE users SET password_hash = $2, must_change_password = TRUE,
+                        password_changed_at = NOW(), updated_at = NOW()
        WHERE id = $1 RETURNING email`,
       [id, passwordHash],
     );
@@ -351,9 +369,10 @@ app.post(
         await client.query(
           `INSERT INTO users (
              username, email, display_name, department, job_title, password_hash,
-             is_active, must_change_password, role, vehicle_admin, meal_admin, approver_doa
+             is_active, must_change_password, role, vehicle_admin, meal_admin, approver_doa,
+             password_changed_at
            )
-           VALUES ($1, $2, $3, $4, $5, $6, TRUE, TRUE, $7, $8, $9, $10)
+           VALUES ($1, $2, $3, $4, $5, $6, TRUE, TRUE, $7, $8, $9, $10, NOW())
            ON CONFLICT (email) DO UPDATE SET
              username = EXCLUDED.username,
              display_name = EXCLUDED.display_name,
@@ -416,10 +435,10 @@ app.put('/api/admin-access/:email', async (req, res) => {
     const passwordHash = await hashPassword(DEFAULT_USER_PASSWORD);
     ({ rows } = await queryUserWrite(
       `INSERT INTO users (
-         username, email, display_name, password_hash, must_change_password,
+         username, email, display_name, password_hash, must_change_password, password_changed_at,
          role, vehicle_admin, meal_admin
        )
-       VALUES ($1, $2, $2, $3, TRUE, 'User', $4, $5)
+       VALUES ($1, $2, $2, $3, TRUE, NOW(), 'User', $4, $5)
        RETURNING id, email, vehicle_admin, meal_admin`,
       [email, email, passwordHash, vehicleAdmin, mealAdmin],
     ));
@@ -941,8 +960,12 @@ function mapUserProfile(row) {
     isVehicleAdmin: row.vehicle_admin,
     isMealAdmin: row.meal_admin,
     isApproverDoa: row.approver_doa,
+    isActive: row.is_active,
+    mustChangePassword: row.must_change_password,
     createdAt: row.created_at,
     lastLogin: row.last_login,
+    passwordChangedAt: row.password_changed_at,
+    loginCount: Number(row.login_count ?? 0),
   };
 }
 
@@ -990,9 +1013,10 @@ async function migrateAdminAccess() {
       await client.query(
         `INSERT INTO users (
            username, email, display_name, job_title, password_hash,
-           is_active, must_change_password, role, vehicle_admin, meal_admin, approver_doa
+           is_active, must_change_password, role, vehicle_admin, meal_admin, approver_doa,
+           password_changed_at
          )
-         VALUES ($1, $2, $3, $4, $5, TRUE, TRUE, $6, $7, $8, $9)
+         VALUES ($1, $2, $3, $4, $5, TRUE, TRUE, $6, $7, $8, $9, NOW())
          ON CONFLICT (email) DO NOTHING`,
         [
           email,
