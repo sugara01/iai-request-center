@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { BookOpenCheck, CarFront, Check, ChevronDown, ClipboardList, Gauge, KeyRound, Languages, LogOut, Presentation, ShieldCheck, SquarePen, UserRound, Users, Workflow } from 'lucide-react';
+import { BookOpenCheck, CarFront, Check, ChevronDown, ClipboardList, Gauge, KeyRound, Languages, LogOut, Presentation, SquarePen, UserRound, Users, Workflow } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
@@ -65,7 +65,6 @@ export default function Layout() {
     ...(showVehicleAdmin ? [{ to: '/admin-kendaraan', label: t('Admin Kendaraan'), icon: CarFront, count: notificationCounts.vehicle }] : []),
     ...(showMealAdmin ? [{ to: '/admin-meal', label: t('Admin Extra Meal'), icon: ClipboardList, count: notificationCounts.meal }] : []),
     ...(showVehicleAdmin || showMealAdmin ? [{ to: '/panduan-power-automate', label: t('Workflow Request'), icon: Workflow }] : []),
-    ...(!demoRole && isSuperAdmin ? [{ to: '/kelola-admin', label: t('Kelola Admin'), icon: ShieldCheck }] : []),
     ...(!demoRole && (isITAdmin || isSuperAdmin) ? [{ to: '/kelola-pengguna', label: t('Kelola Pengguna'), icon: Users }] : []),
   ];
   const localizedRequesterLinks = requesterLinks.map((link: typeof requesterLinks[number]) => ({ ...link, label: t(link.label) }));

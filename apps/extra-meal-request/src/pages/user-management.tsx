@@ -32,7 +32,7 @@ type ManagedUser = {
   updatedAt: string;
   lastLogin: string | null;
 };
-type UserForm = Omit<ManagedUser, 'id' | 'isActive' | 'mustChangePassword' | 'createdAt' | 'updatedAt' | 'lastLogin' | 'department' | 'jobTitle'> & {
+type UserForm = Omit<ManagedUser, 'id' | 'isActive' | 'createdAt' | 'updatedAt' | 'lastLogin' | 'department' | 'jobTitle'> & {
   department: string;
   jobTitle: string;
 };
@@ -44,6 +44,7 @@ const emptyForm: UserForm = {
   displayName: '',
   department: '',
   jobTitle: '',
+  mustChangePassword: true,
   role: 'User',
   vehicleAdmin: false,
   mealAdmin: false,
@@ -141,6 +142,7 @@ export default function UserManagementPage() {
       displayName: user.displayName,
       department: user.department ?? '',
       jobTitle: user.jobTitle ?? '',
+      mustChangePassword: user.mustChangePassword,
       role: user.role,
       vehicleAdmin: user.vehicleAdmin,
       mealAdmin: user.mealAdmin,
@@ -246,6 +248,7 @@ export default function UserManagementPage() {
               <PermissionSwitch label={t('Admin Kendaraan')} checked={form.vehicleAdmin} onCheckedChange={(checked) => setForm({ ...form, vehicleAdmin: checked })} />
               <PermissionSwitch label={t('Admin Extra Meal')} checked={form.mealAdmin} onCheckedChange={(checked) => setForm({ ...form, mealAdmin: checked })} />
               <PermissionSwitch label={t('Approver DoA')} checked={form.approverDoa} onCheckedChange={(checked) => setForm({ ...form, approverDoa: checked })} />
+              {editingId && <PermissionSwitch label={t('Wajib ganti password saat login')} checked={form.mustChangePassword} onCheckedChange={(checked) => setForm({ ...form, mustChangePassword: checked })} />}
               <div className="flex gap-2">
                 <Button type="submit" className="flex-1" disabled={saveUser.isPending}>
                   <Save />{saveUser.isPending ? t('Menyimpan...') : t('Simpan Pengguna')}

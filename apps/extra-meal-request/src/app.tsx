@@ -20,7 +20,6 @@ import AdminMonitoringPage from '@/pages/admin-monitoring';
 import VehicleAdminPage from '@/pages/vehicle-admin';
 
 import RequesterGuidePage from '@/pages/requester-guide';
-import AdminAccessPage from '@/pages/admin-access';
 import UserManagementPage from '@/pages/user-management';
 import LoginPage from '@/pages/login';
 import ProfilePage from '@/pages/profile';
@@ -53,7 +52,6 @@ function App() {
                       <Route path="admin-kendaraan" element={<AdminRoute role="vehicle"><VehicleAdminPage /></AdminRoute>} />
                       <Route path="admin-meal" element={<AdminRoute role="meal"><AdminMonitoringPage /></AdminRoute>} />
                       <Route path="panduan-power-automate" element={<AdminRoute role="request-admin"><PowerAutomateGuidePage /></AdminRoute>} />
-                      <Route path="kelola-admin" element={<AdminRoute role="super"><AdminAccessPage /></AdminRoute>} />
                       <Route path="kelola-pengguna" element={<AdminRoute role="user-admin"><UserManagementPage /></AdminRoute>} />
                       <Route path="profile" element={<ProfilePage />} />
                       <Route path="*" element={<NotFoundPage />} />

@@ -241,12 +241,13 @@ app.patch('/api/users/:id', async (req, res) => {
     `UPDATE users
      SET username = $2, display_name = $3, department = $4, job_title = $5,
          role = $6, vehicle_admin = $7, meal_admin = $8, approver_doa = $9,
+         must_change_password = COALESCE($10, must_change_password),
          updated_at = NOW()
      WHERE id = $1
      RETURNING ${managedUserColumns}`,
     [
       id, user.username, user.displayName, user.department, user.jobTitle,
-      user.role, user.vehicleAdmin, user.mealAdmin, user.approverDoa,
+      user.role, user.vehicleAdmin, user.mealAdmin, user.approverDoa, user.mustChangePassword ?? null,
     ],
   );
   await writeAudit(req.user.email, 'user', rows[0].email, 'update', {
@@ -254,6 +255,7 @@ app.patch('/api/users/:id', async (req, res) => {
     vehicleAdmin: user.vehicleAdmin,
     mealAdmin: user.mealAdmin,
     approverDoa: user.approverDoa,
+    mustChangePassword: user.mustChangePassword,
   });
   res.json(mapManagedUser(rows[0]));
 });
@@ -405,61 +407,6 @@ app.post(
     res.json({ created, updated });
   },
 );
-
-app.get('/api/admin-access', async (req, res) => {
-  await requireRole(req, 'super_admin');
-  const { rows } = await pool.query(
-    `SELECT id, email, vehicle_admin, meal_admin FROM users
-     WHERE vehicle_admin = TRUE OR meal_admin = TRUE OR role = 'SuperAdmin'
-     ORDER BY email`,
-  );
-  res.json(rows.map(mapAdminAccess));
-});
-
-app.put('/api/admin-access/:email', async (req, res) => {
-  await requireRole(req, 'super_admin');
-  const email = String(req.params.email).trim().toLowerCase();
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new HttpError(400, 'Enter a valid email address.');
-  const vehicleAdmin = Boolean(req.body.vehicleAdmin);
-  const mealAdmin = Boolean(req.body.mealAdmin);
-  const { rows: existingUsers } = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
-  let rows;
-  if (existingUsers[0]) {
-    ({ rows } = await pool.query(
-      `UPDATE users SET vehicle_admin = $2, meal_admin = $3, updated_at = NOW()
-       WHERE email = $1
-       RETURNING id, email, vehicle_admin, meal_admin`,
-      [email, vehicleAdmin, mealAdmin],
-    ));
-  } else {
-    const passwordHash = await hashPassword(DEFAULT_USER_PASSWORD);
-    ({ rows } = await queryUserWrite(
-      `INSERT INTO users (
-         username, email, display_name, password_hash, must_change_password, password_changed_at,
-         role, vehicle_admin, meal_admin
-       )
-       VALUES ($1, $2, $2, $3, TRUE, NOW(), 'User', $4, $5)
-       RETURNING id, email, vehicle_admin, meal_admin`,
-      [email, email, passwordHash, vehicleAdmin, mealAdmin],
-    ));
-  }
-  await writeAudit(req.user.email, 'admin_access', email, 'upsert', { vehicleAdmin, mealAdmin });
-  res.json(mapAdminAccess(rows[0]));
-});
-
-app.delete('/api/admin-access/:id', async (req, res) => {
-  await requireRole(req, 'super_admin');
-  const id = parseId(req.params.id);
-  const { rows } = await pool.query(
-    `UPDATE users SET vehicle_admin = FALSE, meal_admin = FALSE, updated_at = NOW()
-     WHERE id = $1 AND role <> 'SuperAdmin'
-     RETURNING email`,
-    [id],
-  );
-  if (!rows[0]) throw new HttpError(404, 'Admin access record was not found or cannot be revoked.');
-  await writeAudit(req.user.email, 'admin_access', rows[0].email, 'delete', {});
-  res.status(204).end();
-});
 
 app.get('/api/meal-requests', async (req, res) => {
   const isAdmin = await hasRole(req, 'meal_admin');
@@ -774,6 +721,9 @@ function readUserInput(body, includeEmail) {
     vehicleAdmin: requireBoolean(body.vehicleAdmin, 'vehicleAdmin'),
     mealAdmin: requireBoolean(body.mealAdmin, 'mealAdmin'),
     approverDoa: requireBoolean(body.approverDoa, 'approverDoa'),
+    mustChangePassword: body.mustChangePassword === undefined
+      ? undefined
+      : requireBoolean(body.mustChangePassword, 'mustChangePassword'),
   };
   if (includeEmail) {
     const email = requireString(body.email, 'email', 254).toLowerCase();
@@ -902,15 +852,6 @@ async function writeAudit(actorEmail, entityType, entityId, action, details) {
   );
 }
 
-function mapAdminAccess(row) {
-  return {
-    id: Number(row.id),
-    title: row.email,
-    vehicleAdmin: row.vehicle_admin ? 'Yes' : 'No',
-    mealAdmin: row.meal_admin ? 'Yes' : 'No',
-  };
-}
-
 function mapManagedUser(row) {
   return {
     id: Number(row.id),
@@ -997,11 +938,6 @@ async function migrateAdminAccess() {
   );
   const existingEmails = new Set(existingRows.map((row) => row.email));
   const missingRows = accessRows.filter((row) => !existingEmails.has(row.email));
-  await pool.query(
-    `UPDATE users
-     SET role = 'SuperAdmin', vehicle_admin = TRUE, meal_admin = TRUE, approver_doa = TRUE
-     WHERE LOWER(email) = 'riyan.sugara@ineos.com'`,
-  );
   if (missingRows.length === 0) return;
 
   const client = await pool.connect();

@@ -8,7 +8,7 @@ const STORAGE_KEY = 'iai-request-center-language';
 
 const english: Record<string, string> = {
   'Dashboard Saya': 'My Dashboard', 'Buat Request': 'Create Request', 'Panduan Requester': 'Requester Guide',
-  'Admin Kendaraan': 'Vehicle Admin', 'Admin Extra Meal': 'Extra Meal Admin', 'Workflow Request': 'Request Workflow', 'Kelola Admin': 'Manage Admins',
+  'Admin Kendaraan': 'Vehicle Admin', 'Admin Extra Meal': 'Extra Meal Admin', 'Workflow Request': 'Request Workflow',
   'Kelola Pengguna': 'Manage Users', 'Administrasi sistem': 'System administration',
   'Lihat Profil': 'View Profile', 'Ubah Password': 'Change Password', 'Mode Demo': 'Demo Mode',
   'Keluar dari Mode Demo': 'Exit Demo Mode', 'Keluar': 'Sign Out',
@@ -103,9 +103,6 @@ const english: Record<string, string> = {
   'Kendaraan': 'Vehicle', 'Pusat bantuan requester': 'Requester help center', 'Panduan membuat request': 'How to create a request', 'Pilih langkah': 'Choose a step', 'Langkah berikutnya': 'Next step', 'Panduan selesai': 'Guide complete', 'Yang perlu Anda isi': 'What you need to fill in', 'Tips:': 'Tips:',
   '4 langkah pengisian': '4 steps', 'Pantau status': 'Track status', 'Melalui Dashboard Saya': 'Through My Dashboard', 'Buka form kendaraan': 'Open vehicle form', 'Buka form extra meal': 'Open extra meal form', 'Buka Dashboard Saya': 'Open My Dashboard',
   'Trigger reminder dicatat untuk {{name}}.': 'Reminder trigger recorded for {{name}}.', 'Reminder terkirim': 'Reminder sent', 'Reminder Plant Manager': 'Remind Plant Manager', 'Status approval': 'Approval status', 'Request submitted': 'Request submitted', 'Menunggu keputusan Plant Manager melalui Power Automate.': 'Waiting for the Plant Manager decision through Power Automate.', 'Reminder dicatat': 'Reminder recorded', 'Approver': 'Approver', 'Lihat proses approval': 'View approval process',
-  'Khusus Riyan Sugara': 'Riyan Sugara only', 'Kelola akses admin': 'Manage admin access', 'Atur akses kendaraan dan extra meal melalui data AdminAcess.': 'Manage vehicle and extra meal access through AdminAcess data.', 'Assign admin': 'Assign admin', 'Email user': 'User email', 'Masukkan alamat email kantor secara manual.': 'Enter the corporate email address manually.', 'Simpan akses': 'Save access', 'Daftar admin': 'Admin list', 'Cari email': 'Search email',
-  'Masukkan alamat email yang valid': 'Enter a valid email address', 'Akses admin diperbarui': 'Admin access updated', 'Admin berhasil ditambahkan': 'Admin added successfully', 'Akses admin gagal disimpan': 'Failed to save admin access', 'Role admin diperbarui': 'Admin role updated', 'Role gagal diperbarui': 'Failed to update role',
-  'Cabut akses admin': 'Revoke admin access', 'Cabut akses admin?': 'Revoke admin access?', 'Akses admin berhasil dicabut': 'Admin access revoked', 'Akses admin gagal dicabut': 'Failed to revoke admin access', 'Mencabut...': 'Revoking...', 'Ya, cabut akses': 'Yes, revoke access',
   'Sortir Request ID Z ke A': 'Sort Request ID Z to A', 'Sortir Request ID A ke Z': 'Sort Request ID A to Z', 'Sortir Requester Z ke A': 'Sort Requester Z to A', 'Sortir Requester A ke Z': 'Sort Requester A to Z', 'Menampilkan': 'Showing', 'hasil': 'results', 'Halaman': 'Page', 'baris': 'rows',
   'Memuat akses': 'Loading access', 'Page Not Found': 'Page Not Found', 'Go Back Home': 'Go Back Home',
   'SharePoint List Db: Online': 'SharePoint List DB: Online', 'Developer By: Riyan Sugara': 'Developed by: Riyan Sugara', 'Online': 'Online',
