@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useUser } from '@/hooks/use-user';
 import { useInboxApprovals, useResolveInboxApproval, type InboxApproval } from '@/hooks/use-inbox';
 import { useLanguage } from '@/lib/localization';
@@ -99,7 +100,16 @@ export default function PendingApprovalsPage() {
                       <TableCell><Badge variant={approval.currentStatus === 'Mixed' ? 'outline' : 'secondary'}>{statusLabel(approval.currentStatus, t)}</Badge></TableCell>
                       <TableCell>{approval.actionStage === 'vehicle_availability' ? t('Tentukan ketersediaan kendaraan') : approval.actionStage === 'plant_director' ? t('Keputusan Plant Director') : t('Tinjau grup Extra Meal')}</TableCell>
                       <TableCell><div className="flex justify-end gap-2">
-                        <Button variant="outline" size="sm" asChild><Link to={`${approval.type === 'vehicle' ? '/admin-kendaraan' : '/admin-meal'}?request=${encodeURIComponent(approval.requestId)}`}><ExternalLink />{t('Buka request')}</Link></Button>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="outline" size="icon-sm" asChild aria-label={t('Buka request')}>
+                              <Link to={`${approval.type === 'vehicle' ? '/admin-kendaraan' : '/admin-meal'}?request=${encodeURIComponent(approval.requestId)}`}>
+                                <ExternalLink />
+                              </Link>
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top">{t('Buka request')}</TooltipContent>
+                        </Tooltip>
                         <Button size="sm" disabled={resolveApproval.isPending} onClick={() => setDecision({ approval, decision: 'approve', note: '' })}>{t('Approve')}</Button>
                         <Button size="sm" variant="destructive" disabled={resolveApproval.isPending} onClick={() => setDecision({ approval, decision: 'reject', note: '' })}>{t('Reject')}</Button>
                       </div></TableCell>
