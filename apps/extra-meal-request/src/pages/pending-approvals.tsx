@@ -37,11 +37,13 @@ export default function PendingApprovalsPage() {
 
   async function confirmDecision() {
     if (!decision) return;
-    if (!decision.note.trim()) {
-      toast.error(decision.approval.actionStage === 'plant_director'
-        ? t('Catatan Plant Director wajib diisi.')
-        : t('Catatan Admin Kendaraan wajib diisi.'));
-      return;
+    if (decision.approval.type === 'vehicle') {
+      if (!decision.note.trim()) {
+        toast.error(decision.approval.actionStage === 'plant_director'
+          ? t('Catatan Plant Director wajib diisi.')
+          : t('Catatan Admin Kendaraan wajib diisi.'));
+        return;
+      }
     }
     try {
       await resolveApproval.mutateAsync(decision);
