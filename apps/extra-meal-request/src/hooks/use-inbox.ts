@@ -14,9 +14,10 @@ export type InboxApproval = {
 
 export type UserNotification = {
   id: number;
-  eventType: 'request_assigned' | 'request_submitted' | 'request_approved' | 'request_rejected' | 'password_changed' | 'password_reset';
+  eventType: 'request_assigned' | 'request_submitted' | 'request_approved' | 'request_rejected' | 'vehicle_available' | 'vehicle_not_available' | 'password_changed' | 'password_reset';
   relatedEntityType?: string;
   relatedEntityId?: string;
+  metadata?: Record<string, unknown>;
   createdAt: string;
   readAt?: string;
 };
@@ -56,6 +57,8 @@ export function getNotificationTitle(
     return t('{{requestType}} baru untuk ditinjau', { requestType: getRequestTypeLabel(notification, t) });
   }
   if (notification.eventType === 'request_submitted') return t('{{requestType}} dikirim', { requestType: getRequestTypeLabel(notification, t) });
+  if (notification.eventType === 'vehicle_available') return t('Kendaraan tersedia');
+  if (notification.eventType === 'vehicle_not_available') return t('Kendaraan tidak tersedia');
   if (notification.eventType === 'request_approved') return t('{{requestType}} disetujui', { requestType: getRequestTypeLabel(notification, t) });
   if (notification.eventType === 'request_rejected') return t('{{requestType}} ditolak', { requestType: getRequestTypeLabel(notification, t) });
   if (notification.eventType === 'password_changed') return t('Password Diubah');
@@ -69,14 +72,103 @@ export function getNotificationText(
   if (notification.eventType === 'password_changed') return t('Password akun Anda berhasil diubah.');
   if (notification.eventType === 'password_reset') return t('Password akun Anda telah direset. Silakan masuk dan ubah password.');
 
+  const metadata = notification.metadata ?? {};
   const values = {
     requestId: notification.relatedEntityId ?? '',
     requestType: getRequestTypeLabel(notification, t),
   };
+  if (notification.eventType === 'request_submitted') {
+    return t('Request: {{requestId}}\nStatus: {{status}}', {
+      requestId: notification.relatedEntityId ?? '',
+      status: String(metadata.status ?? 'Submitted'),
+    });
+  }
+  if (notification.eventType === 'vehicle_available') {
+    return t('Request: {{requestId}}\nStatus: Pending Plant Director Approval\nKeputusan Admin: Available\nCatatan Admin: {{note}}', {
+      requestId: notification.relatedEntityId ?? '',
+      note: String(metadata.adminNote ?? '-'),
+    });
+  }
+  if (notification.eventType === 'vehicle_not_available') {
+    return t('Request: {{requestId}}\nStatus: Rejected - Vehicle Not Available\nKeputusan Admin: Not Available\nCatatan Admin: {{note}}', {
+      requestId: notification.relatedEntityId ?? '',
+      note: String(metadata.adminNote ?? '-'),
+    });
+  }
+  if (notification.eventType === 'request_approved' && notification.relatedEntityType === 'vehicle_request') {
+    return t('Request: {{requestId}}\nStatus: Approved\nCatatan Plant Director: {{note}}', {
+      requestId: notification.relatedEntityId ?? '',
+      note: String(metadata.plantDirectorNote ?? '-'),
+    });
+  }
+  if (notification.eventType === 'request_rejected' && notification.relatedEntityType === 'vehicle_request') {
+    return t('Request: {{requestId}}\nStatus: RejectedPlantDirector\nCatatan Plant Director: {{note}}', {
+      requestId: notification.relatedEntityId ?? '',
+      note: String(metadata.plantDirectorNote ?? '-'),
+    });
+  }
   if (notification.eventType === 'request_assigned') return t('{{requestType}} {{requestId}} menunggu peninjauan.', values);
-  if (notification.eventType === 'request_submitted') return t('{{requestType}} {{requestId}} berhasil dikirim.', values);
   if (notification.eventType === 'request_approved') return t('{{requestType}} {{requestId}} telah disetujui.', values);
   return t('{{requestType}} {{requestId}} telah ditolak.', values);
+}
+
+export function getBellNotificationSummary(
+  notification: UserNotification,
+  t: (key: string, values?: Record<string, string | number>) => string,
+) {
+  const metadata = notification.metadata ?? {};
+  const requestId = notification.relatedEntityId ?? '-';
+  let status = String(metadata.status ?? '');
+
+  if (notification.eventType === 'vehicle_available') status = 'Pending Plant Director Approval';
+  if (notification.eventType === 'vehicle_not_available') status = 'Rejected - Vehicle Not Available';
+  if (notification.eventType === 'request_approved') status = 'Approved';
+  if (notification.eventType === 'request_rejected') status = 'RejectedPlantDirector';
+  if (notification.eventType === 'request_submitted') status = status || 'Submitted';
+  if (notification.eventType === 'request_assigned') status = status || 'Submitted';
+
+  return {
+    title: getNotificationTitle(notification, t),
+    requestId,
+    status,
+  };
+}
+
+export function getVehicleNotificationDetails(notification: UserNotification) {
+  if (notification.relatedEntityType !== 'vehicle_request') return undefined;
+
+  const metadata = notification.metadata ?? {};
+  const status = notification.eventType === 'vehicle_available'
+    ? 'Pending Plant Director Approval'
+    : notification.eventType === 'vehicle_not_available'
+      ? 'Rejected - Vehicle Not Available'
+      : notification.eventType === 'request_approved'
+        ? 'Approved'
+        : notification.eventType === 'request_rejected'
+          ? 'RejectedPlantDirector'
+          : 'Submitted';
+
+  if (notification.eventType === 'vehicle_available' || notification.eventType === 'vehicle_not_available') {
+    return {
+      status,
+      noteLabel: 'Catatan Admin',
+      note: String(metadata.adminNote ?? '-'),
+    };
+  }
+
+  if (notification.eventType === 'request_approved' || notification.eventType === 'request_rejected') {
+    return {
+      status,
+      noteLabel: 'Catatan Plant Director',
+      note: String(metadata.plantDirectorNote ?? '-'),
+    };
+  }
+
+  if (notification.eventType === 'request_submitted') {
+    return { status };
+  }
+
+  return undefined;
 }
 
 export function useInboxApprovals(enabled = true) {
@@ -117,12 +209,12 @@ export function useUserNotifications(params: NotificationsParams = {}) {
 export function useResolveInboxApproval() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ approval, decision }: { approval: InboxApproval; decision: 'approve' | 'reject' }) => {
+    mutationFn: ({ approval, decision, note }: { approval: InboxApproval; decision: 'approve' | 'reject'; note?: string }) => {
       if (approval.type === 'vehicle') {
         if (!approval.vehicleId) throw new Error('Vehicle request ID is missing.');
         const changedFields = approval.actionStage === 'vehicle_availability'
-          ? { adminDecisionKey: decision === 'approve' ? 'Available' : 'NotAvailable' }
-          : { plantDirectorDecisionKey: decision === 'approve' ? 'Approved' : 'Rejected' };
+          ? { adminDecisionKey: decision === 'approve' ? 'Available' : 'NotAvailable', adminNote: note?.trim() }
+          : { plantDirectorDecisionKey: decision === 'approve' ? 'Approved' : 'Rejected', plantDirectorNote: note?.trim() };
         return apiRequest(`/vehicle-requests/${approval.vehicleId}`, {
           method: 'PATCH',
           body: JSON.stringify(changedFields),

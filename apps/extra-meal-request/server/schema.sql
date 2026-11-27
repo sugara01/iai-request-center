@@ -56,13 +56,16 @@ CREATE TABLE IF NOT EXISTS user_notifications (
   user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   event_type TEXT NOT NULL CHECK (event_type IN (
     'request_assigned', 'request_submitted', 'request_approved', 'request_rejected',
-    'password_changed', 'password_reset'
+    'vehicle_available', 'vehicle_not_available', 'password_changed', 'password_reset'
   )),
   related_entity_type TEXT,
   related_entity_id TEXT,
+  metadata JSONB NOT NULL DEFAULT '{}'::JSONB,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   read_at TIMESTAMPTZ
 );
+
+ALTER TABLE user_notifications ADD COLUMN IF NOT EXISTS metadata JSONB NOT NULL DEFAULT '{}'::JSONB;
 
 DO $migration$
 BEGIN
@@ -74,6 +77,8 @@ BEGIN
       AND (
         POSITION('request_submitted' IN pg_get_constraintdef(oid)) = 0
         OR POSITION('password_changed' IN pg_get_constraintdef(oid)) = 0
+        OR POSITION('vehicle_available' IN pg_get_constraintdef(oid)) = 0
+        OR POSITION('vehicle_not_available' IN pg_get_constraintdef(oid)) = 0
       )
   ) THEN
     ALTER TABLE user_notifications
@@ -90,7 +95,7 @@ BEGIN
       ADD CONSTRAINT user_notifications_event_type_check
       CHECK (event_type IN (
         'request_assigned', 'request_submitted', 'request_approved', 'request_rejected',
-        'password_changed', 'password_reset'
+        'vehicle_available', 'vehicle_not_available', 'password_changed', 'password_reset'
       ));
   END IF;
 END

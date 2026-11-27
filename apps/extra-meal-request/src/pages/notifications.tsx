@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Bell, CheckCheck, RefreshCw, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
@@ -7,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { getNotificationText, getNotificationTitle, useDeleteNotification, useDeleteSelectedNotifications, useMarkAllNotificationsRead, useMarkNotificationRead, useMarkSelectedNotificationsRead, useUserNotifications, type NotificationStatusFilter, type NotificationTypeFilter, type UserNotification } from '@/hooks/use-inbox';
+import { getNotificationText, getNotificationTitle, getVehicleNotificationDetails, useDeleteNotification, useDeleteSelectedNotifications, useMarkAllNotificationsRead, useMarkNotificationRead, useMarkSelectedNotificationsRead, useUserNotifications, type NotificationStatusFilter, type NotificationTypeFilter, type UserNotification } from '@/hooks/use-inbox';
 import { useLanguage } from '@/lib/localization';
 
 function formatNotificationDate(value: string, locale: string) {
@@ -17,6 +18,7 @@ function formatNotificationDate(value: string, locale: string) {
 
 export default function NotificationsPage() {
   const { t, locale } = useLanguage();
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [statusFilter, setStatusFilter] = useState<NotificationStatusFilter>('all');
@@ -49,6 +51,16 @@ export default function NotificationsPage() {
       await markRead.mutateAsync(notification.id);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t('Notifikasi gagal diperbarui.'));
+    }
+  }
+
+  function openNotification(notification: UserNotification) {
+    if (notification.relatedEntityType === 'vehicle_request' || notification.relatedEntityType === 'meal_request') {
+      const type = notification.relatedEntityType === 'vehicle_request' ? 'vehicle' : 'meal';
+      navigate(`/?type=${type}&request=${encodeURIComponent(notification.relatedEntityId ?? '')}`);
+    }
+    if (!notification.readAt) {
+      void markOne(notification);
     }
   }
 
@@ -177,34 +189,45 @@ export default function NotificationsPage() {
           ) : (
             <>
               <ul className="divide-y">
-                {items.map((notification: UserNotification) => (
-                  <li key={notification.id} className="flex flex-wrap items-center justify-between gap-4 py-4 first:pt-0 last:pb-0">
-                    <Checkbox
-                      checked={selectedIds.has(notification.id)}
-                      onCheckedChange={(checked) => toggleSelected(notification.id, checked === true)}
-                      aria-label={`${t('Pilih')} ${getNotificationTitle(notification, t)}`}
-                    />
-                    <button
-                      type="button"
-                      className="flex min-w-0 flex-1 items-start gap-3 text-left outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-ring"
-                      aria-label={notification.readAt ? getNotificationTitle(notification, t) : `${t('Tandai dibaca')}: ${getNotificationTitle(notification, t)}`}
-                      disabled={!notification.readAt && markRead.isPending}
-                      onClick={() => void markOne(notification)}
-                    >
-                      <span className={`mt-1 size-2 shrink-0 rounded-full ${notification.readAt ? 'bg-muted' : 'bg-primary'}`} aria-label={notification.readAt ? t('Sudah dibaca') : t('Belum dibaca')} />
-                      <span className="min-w-0">
-                        <span className="block text-sm font-medium">{getNotificationTitle(notification, t)}</span>
-                        <span className="mt-1 block text-sm text-muted-foreground">{getNotificationText(notification, t)}</span>
-                        <span className="mt-1 block text-xs text-muted-foreground">{formatNotificationDate(notification.createdAt, locale)}</span>
-                      </span>
-                    </button>
-                    <div className="flex items-center gap-2">
-                      <Badge variant={notification.readAt ? 'outline' : 'default'}>{notification.readAt ? t('Sudah dibaca') : t('Belum dibaca')}</Badge>
-                      {!notification.readAt && <Button variant="outline" size="sm" disabled={markRead.isPending} onClick={() => void markOne(notification)}>{t('Tandai dibaca')}</Button>}
-                      <Button variant="ghost" size="icon" disabled={deleteNotification.isPending} onClick={() => void deleteOne(notification.id)} aria-label={t('Hapus notifikasi')} title={t('Hapus notifikasi')}><Trash2 className="size-4" /></Button>
-                    </div>
-                  </li>
-                ))}
+                {items.map((notification: UserNotification) => {
+                  const vehicleDetails = getVehicleNotificationDetails(notification);
+                  return (
+                    <li key={notification.id} className="-mx-2 flex flex-wrap items-center justify-between gap-4 rounded-lg px-2 py-4 transition-colors hover:bg-muted/70 first:pt-4 last:pb-4">
+                      <Checkbox
+                        checked={selectedIds.has(notification.id)}
+                        onCheckedChange={(checked) => toggleSelected(notification.id, checked === true)}
+                        aria-label={`${t('Pilih')} ${getNotificationTitle(notification, t)}`}
+                      />
+                      <button
+                        type="button"
+                        className="flex min-w-0 flex-1 items-start gap-3 text-left outline-none focus-visible:rounded-md focus-visible:ring-2 focus-visible:ring-ring"
+                        aria-label={notification.readAt ? getNotificationTitle(notification, t) : `${t('Tandai dibaca')}: ${getNotificationTitle(notification, t)}`}
+                        disabled={!notification.readAt && markRead.isPending}
+                        onClick={() => openNotification(notification)}
+                      >
+                        <span className={`mt-1 size-2 shrink-0 rounded-full ${notification.readAt ? 'bg-muted' : 'bg-primary'}`} aria-label={notification.readAt ? t('Sudah dibaca') : t('Belum dibaca')} />
+                        <span className="min-w-0">
+                          <span className="block text-sm font-medium">{getNotificationTitle(notification, t)}</span>
+                          {vehicleDetails ? (
+                            <>
+                              {notification.relatedEntityId && <span className="mt-1 block text-sm text-foreground">Request: {notification.relatedEntityId}</span>}
+                              <span className="mt-0.5 block text-sm text-foreground">Status: {vehicleDetails.status}</span>
+                              {vehicleDetails.noteLabel && <span className="mt-0.5 block text-sm text-muted-foreground">{vehicleDetails.noteLabel}: {vehicleDetails.note}</span>}
+                            </>
+                          ) : (
+                            <span className="mt-1 block text-sm text-muted-foreground">{getNotificationText(notification, t)}</span>
+                          )}
+                          <span className="mt-1 block text-xs text-muted-foreground">{formatNotificationDate(notification.createdAt, locale)}</span>
+                        </span>
+                      </button>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={notification.readAt ? 'outline' : 'default'}>{notification.readAt ? t('Sudah dibaca') : t('Belum dibaca')}</Badge>
+                        {!notification.readAt && <Button variant="outline" size="sm" disabled={markRead.isPending} onClick={() => void markOne(notification)}>{t('Tandai dibaca')}</Button>}
+                        <Button variant="ghost" size="icon" disabled={deleteNotification.isPending} onClick={() => void deleteOne(notification.id)} aria-label={t('Hapus notifikasi')} title={t('Hapus notifikasi')}><Trash2 className="size-4" /></Button>
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t pt-4">
                 <p className="text-sm text-muted-foreground">

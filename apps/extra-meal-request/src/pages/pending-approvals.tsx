@@ -8,11 +8,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Textarea } from '@/components/ui/textarea';
 import { useUser } from '@/hooks/use-user';
 import { useInboxApprovals, useResolveInboxApproval, type InboxApproval } from '@/hooks/use-inbox';
 import { useLanguage } from '@/lib/localization';
 
-type PendingDecision = { approval: InboxApproval; decision: 'approve' | 'reject' };
+type PendingDecision = { approval: InboxApproval; decision: 'approve' | 'reject'; note: string };
 
 function formatRequestDate(value: string, locale: string) {
   const date = new Date(value);
@@ -36,6 +37,12 @@ export default function PendingApprovalsPage() {
 
   async function confirmDecision() {
     if (!decision) return;
+    if (!decision.note.trim()) {
+      toast.error(decision.approval.actionStage === 'plant_director'
+        ? t('Catatan Plant Director wajib diisi.')
+        : t('Catatan Admin Kendaraan wajib diisi.'));
+      return;
+    }
     try {
       await resolveApproval.mutateAsync(decision);
       toast.success(decision.decision === 'approve' ? t('Approval berhasil disimpan.') : t('Request berhasil ditolak.'));
@@ -91,8 +98,8 @@ export default function PendingApprovalsPage() {
                       <TableCell>{approval.actionStage === 'vehicle_availability' ? t('Tentukan ketersediaan kendaraan') : approval.actionStage === 'plant_director' ? t('Keputusan Plant Director') : t('Tinjau grup Extra Meal')}</TableCell>
                       <TableCell><div className="flex justify-end gap-2">
                         <Button variant="outline" size="sm" asChild><Link to={`${approval.type === 'vehicle' ? '/admin-kendaraan' : '/admin-meal'}?request=${encodeURIComponent(approval.requestId)}`}><ExternalLink />{t('Buka request')}</Link></Button>
-                        <Button size="sm" disabled={resolveApproval.isPending} onClick={() => setDecision({ approval, decision: 'approve' })}>{t('Approve')}</Button>
-                        <Button size="sm" variant="destructive" disabled={resolveApproval.isPending} onClick={() => setDecision({ approval, decision: 'reject' })}>{t('Reject')}</Button>
+                        <Button size="sm" disabled={resolveApproval.isPending} onClick={() => setDecision({ approval, decision: 'approve', note: '' })}>{t('Approve')}</Button>
+                        <Button size="sm" variant="destructive" disabled={resolveApproval.isPending} onClick={() => setDecision({ approval, decision: 'reject', note: '' })}>{t('Reject')}</Button>
                       </div></TableCell>
                     </TableRow>
                   ))}
@@ -108,18 +115,46 @@ export default function PendingApprovalsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>{decision?.decision === 'approve' ? t('Konfirmasi approval') : t('Konfirmasi penolakan')}</AlertDialogTitle>
             <AlertDialogDescription>
-              {decision ? t(
-                decision.decision === 'approve' ? 'Anda akan menyetujui request {{requestId}}.' : 'Anda akan menolak request {{requestId}}.',
-                { requestId: decision.approval.requestId },
-              ) : ''}
-              {decision?.approval.actionStage === 'vehicle_availability' && decision.decision === 'approve'
-                ? ` ${t('Keputusan Available akan meneruskan request ke tahap Plant Director.')}`
+              {decision
+                ? decision.approval.type === 'vehicle'
+                  ? decision.approval.actionStage === 'vehicle_availability'
+                    ? decision.decision === 'approve'
+                      ? t('Vehicle Admin Decision: Available')
+                      : t('Vehicle Admin Decision: Not Available')
+                    : decision.decision === 'approve'
+                      ? t('Plant Director Decision: Approved')
+                      : t('Plant Director Decision: Rejected')
+                  : t(
+                      decision.decision === 'approve' ? 'Anda akan menyetujui request {{requestId}}.' : 'Anda akan menolak request {{requestId}}.',
+                      { requestId: decision.approval.requestId },
+                    )
                 : ''}
             </AlertDialogDescription>
           </AlertDialogHeader>
+          {decision?.approval.type === 'vehicle' && (
+            <div className="space-y-2 px-6">
+              <label className="text-sm font-medium">
+                {decision.approval.actionStage === 'plant_director'
+                  ? t('Plant Director Notes')
+                  : t('Admin Notes')}
+              </label>
+              <Textarea
+                value={decision.note}
+                onChange={(event) => setDecision({ ...decision, note: event.target.value })}
+                required
+                maxLength={2000}
+                placeholder={decision.approval.actionStage === 'plant_director'
+                  ? t('Masukkan Catatan Plant Director')
+                  : t('Masukkan Catatan Admin')}
+              />
+            </div>
+          )}
           <AlertDialogFooter>
             <AlertDialogCancel>{t('Batal')}</AlertDialogCancel>
-            <AlertDialogAction disabled={resolveApproval.isPending} onClick={(event) => { event.preventDefault(); void confirmDecision(); }}>
+            <AlertDialogAction
+              disabled={resolveApproval.isPending || Boolean(decision?.approval.type === 'vehicle' && !decision.note.trim())}
+              onClick={(event) => { event.preventDefault(); void confirmDecision(); }}
+            >
               {resolveApproval.isPending ? t('Menyimpan...') : t('Konfirmasi')}
             </AlertDialogAction>
           </AlertDialogFooter>

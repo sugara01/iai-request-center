@@ -48,6 +48,23 @@ test('maps notification IDs and nullable fields to the API response shape', () =
   assert.equal(notification.readAt, undefined);
 });
 
+test('maps vehicle workflow metadata into notification responses', () => {
+  const notification = mapUserNotification({
+    id: '9',
+    event_type: 'vehicle_available',
+    related_entity_type: 'vehicle_request',
+    related_entity_id: 'RQ2611270108',
+    metadata: { status: 'PendingPlantDirectorApproval', adminDecision: 'Available', adminNote: 'Vehicle is available' },
+    created_at: '2026-11-27T10:00:00.000Z',
+    read_at: null,
+  });
+
+  assert.equal(notification.eventType, 'vehicle_available');
+  assert.equal(notification.metadata.status, 'PendingPlantDirectorApproval');
+  assert.equal(notification.metadata.adminDecision, 'Available');
+  assert.equal(notification.metadata.adminNote, 'Vehicle is available');
+});
+
 test('maps requester submission and password-change notification event types', () => {
   for (const eventType of ['request_submitted', 'password_changed']) {
     const notification = mapUserNotification({

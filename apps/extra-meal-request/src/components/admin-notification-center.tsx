@@ -10,7 +10,7 @@ import { useMealRequests } from '@/hooks/use-meal-requests';
 import { useVehicleRequests } from '@/hooks/use-vehicle-requests';
 import type { MealRequest } from '@/lib/meal-store';
 import type { RequestKendaraan } from '@/generated/models/request-kendaraan-model';
-import { getNotificationText, getNotificationTitle, useMarkNotificationRead, useUserNotifications } from '@/hooks/use-inbox';
+import { getBellNotificationSummary, useMarkNotificationRead, useUserNotifications } from '@/hooks/use-inbox';
 import { useLanguage } from '@/lib/localization';
 
 export type AdminNotificationCounts = { vehicle: number; meal: number };
@@ -37,11 +37,16 @@ export function InboxNotificationBell() {
     setOpen(false);
     navigate('/inbox/notifications');
   };
-  const openNotification = (id: number, readAt?: string) => {
+  const openNotification = (notification: typeof notifications[number]) => {
     setOpen(false);
-    navigate('/inbox/notifications');
-    if (!readAt) {
-      void markRead.mutateAsync(id).catch((error: unknown) => {
+    if (notification.relatedEntityType === 'vehicle_request' || notification.relatedEntityType === 'meal_request') {
+      const type = notification.relatedEntityType === 'vehicle_request' ? 'vehicle' : 'meal';
+      navigate(`/?type=${type}&request=${encodeURIComponent(notification.relatedEntityId ?? '')}`);
+    } else {
+      navigate('/inbox/notifications');
+    }
+    if (!notification.readAt) {
+      void markRead.mutateAsync(notification.id).catch((error: unknown) => {
         toast.error(error instanceof Error ? error.message : t('Notifikasi gagal diperbarui.'));
       });
     }
@@ -73,21 +78,25 @@ export function InboxNotificationBell() {
             <div className="p-6 text-sm text-muted-foreground">{t('Notifikasi gagal dimuat. Silakan refresh halaman.')}</div>
           ) : notifications.length === 0 ? (
             <div className="p-8 text-center text-sm text-muted-foreground">{t('Tidak ada notifikasi belum dibaca.')}</div>
-          ) : notifications.slice(0, 8).map((notification) => (
-            <button
-              key={notification.id}
-              type="button"
-              className={`flex w-full gap-3 border-t p-4 text-left hover:bg-accent hover:text-accent-foreground ${notification.readAt ? 'text-muted-foreground' : ''}`}
-              onClick={() => openNotification(notification.id, notification.readAt)}
-            >
-              <span className={`mt-1 size-2 shrink-0 rounded-full ${notification.readAt ? 'bg-muted' : 'bg-primary'}`} />
-              <span className="min-w-0 flex-1">
-                <span className="block text-sm font-medium">{getNotificationTitle(notification, t)}</span>
-                <span className="mt-1 block text-sm">{getNotificationText(notification, t)}</span>
-                <span className="mt-1 block text-xs">{formatCreatedAt(notification.createdAt)}</span>
-              </span>
-            </button>
-          ))}
+          ) : notifications.slice(0, 8).map((notification) => {
+            const summary = getBellNotificationSummary(notification, t);
+            return (
+              <button
+                key={notification.id}
+                type="button"
+                className={`flex w-full gap-3 border-t p-4 text-left hover:bg-accent hover:text-accent-foreground ${notification.readAt ? 'text-muted-foreground' : ''}`}
+                onClick={() => openNotification(notification)}
+              >
+                <span className={`mt-1 size-2 shrink-0 rounded-full ${notification.readAt ? 'bg-muted' : 'bg-primary'}`} />
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-medium">{summary.title}</span>
+                  {summary.requestId !== '-' && <span className="mt-1 block text-sm">Request: {summary.requestId}</span>}
+                  {summary.status && <span className="mt-0.5 block text-sm text-muted-foreground">Status: {summary.status}</span>}
+                  <span className="mt-1 block text-xs text-muted-foreground">{formatCreatedAt(notification.createdAt)}</span>
+                </span>
+              </button>
+            );
+          })}
         </ScrollArea>
       </PopoverContent>
     </Popover>

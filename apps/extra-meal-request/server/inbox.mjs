@@ -23,6 +23,7 @@ export function mapUserNotification(row) {
     eventType: row.event_type,
     relatedEntityType: row.related_entity_type ?? undefined,
     relatedEntityId: row.related_entity_id ?? undefined,
+    metadata: row.metadata && typeof row.metadata === 'object' ? row.metadata : {},
     createdAt: row.created_at,
     readAt: row.read_at ?? undefined,
   };

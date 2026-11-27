@@ -190,7 +190,7 @@ app.get('/api/notifications', async (req, res) => {
   const [unreadResult, rowsResult] = await Promise.all([
     pool.query('SELECT COUNT(*)::INTEGER AS unread_count FROM user_notifications WHERE user_id = $1 AND read_at IS NULL', [req.user.id]),
     pool.query(
-      `SELECT id, event_type, related_entity_type, related_entity_id, created_at, read_at
+      `SELECT id, event_type, related_entity_type, related_entity_id, metadata, created_at, read_at
        FROM user_notifications
        WHERE ${where}
        ORDER BY created_at DESC, id DESC
@@ -617,7 +617,7 @@ app.post('/api/meal-requests', async (req, res) => {
       );
       created.push(result.rows[0]);
     }
-    await insertUserNotification(connection, req.user.email, 'request_submitted', 'meal_request', requestId);
+    await insertUserNotification(connection, req.user.email, 'request_submitted', 'meal_request', requestId, { status: 'Submitted' });
     await insertRoleNotifications(connection, {
       eventType: 'request_assigned',
       relatedEntityType: 'meal_request',
@@ -666,6 +666,7 @@ app.patch('/api/meal-requests/:requestId/status', async (req, res) => {
         status === 'Approved' ? 'request_approved' : 'request_rejected',
         'meal_request',
         req.params.requestId,
+        { status },
       );
       await insertRoleNotifications(connection, {
         eventType: status === 'Approved' ? 'request_approved' : 'request_rejected',
@@ -674,6 +675,7 @@ app.patch('/api/meal-requests/:requestId/status', async (req, res) => {
         mealAdmin: true,
         excludeUserId: req.user.id,
         excludeEmail: current[0].requester_email,
+        metadata: { status },
       });
     }
     await connection.query('COMMIT');
@@ -790,7 +792,7 @@ app.post('/api/vehicle-requests', async (req, res) => {
       ],
     );
     created = rows[0];
-    await insertUserNotification(connection, req.user.email, 'request_submitted', 'vehicle_request', requestNumber);
+    await insertUserNotification(connection, req.user.email, 'request_submitted', 'vehicle_request', requestNumber, { status: 'Submitted' });
     await insertRoleNotifications(connection, {
       eventType: 'request_assigned',
       relatedEntityType: 'vehicle_request',
@@ -821,6 +823,16 @@ app.patch('/api/vehicle-requests/:id', async (req, res) => {
       throw new HttpError(409, 'Final vehicle requests cannot be changed.');
     }
     const body = req.body;
+    if (Object.hasOwn(body, 'adminDecisionKey')) {
+      if (typeof body.adminNote !== 'string' || body.adminNote.trim().length === 0) {
+        throw new HttpError(400, 'Admin Notes are required.');
+      }
+    }
+    if (Object.hasOwn(body, 'plantDirectorDecisionKey')) {
+      if (typeof body.plantDirectorNote !== 'string' || body.plantDirectorNote.trim().length === 0) {
+        throw new HttpError(400, 'Plant Director Notes are required.');
+      }
+    }
     const changes = [];
     const values = [];
     const fields = {
@@ -884,8 +896,21 @@ app.patch('/api/vehicle-requests/:id', async (req, res) => {
       values,
     );
     if (status !== current.current_status_key) {
-      if (status === 'Approved') {
-        await insertUserNotification(connection, current.requester_email, 'request_approved', 'vehicle_request', current.request_number);
+      if (status === 'PendingPlantDirectorApproval') {
+        const metadata = { status, adminDecision: 'Available', adminNote: rows[0].admin_note };
+        await insertUserNotification(connection, current.requester_email, 'vehicle_available', 'vehicle_request', current.request_number, metadata);
+        await insertRoleNotifications(connection, {
+          eventType: 'vehicle_available',
+          relatedEntityType: 'vehicle_request',
+          relatedEntityId: current.request_number,
+          vehicleAdmin: true,
+          excludeUserId: req.user.id,
+          excludeEmail: current.requester_email,
+          metadata,
+        });
+      } else if (status === 'Approved') {
+        const metadata = { status: 'Approved', plantDirectorDecision: 'Approved', plantDirectorNote: rows[0].director_note };
+        await insertUserNotification(connection, current.requester_email, 'request_approved', 'vehicle_request', current.request_number, metadata);
         await insertRoleNotifications(connection, {
           eventType: 'request_approved',
           relatedEntityType: 'vehicle_request',
@@ -893,16 +918,22 @@ app.patch('/api/vehicle-requests/:id', async (req, res) => {
           vehicleAdmin: true,
           excludeUserId: req.user.id,
           excludeEmail: current.requester_email,
+          metadata,
         });
       } else if (['RejectedVehicleNotAvailable', 'RejectedPlantDirector'].includes(status)) {
-        await insertUserNotification(connection, current.requester_email, 'request_rejected', 'vehicle_request', current.request_number);
+        const metadata = status === 'RejectedVehicleNotAvailable'
+          ? { status, adminDecision: 'NotAvailable', adminNote: rows[0].admin_note }
+          : { status, plantDirectorDecision: 'Rejected', plantDirectorNote: rows[0].director_note };
+        const eventType = status === 'RejectedVehicleNotAvailable' ? 'vehicle_not_available' : 'request_rejected';
+        await insertUserNotification(connection, current.requester_email, eventType, 'vehicle_request', current.request_number, metadata);
         await insertRoleNotifications(connection, {
-          eventType: 'request_rejected',
+          eventType,
           relatedEntityType: 'vehicle_request',
           relatedEntityId: current.request_number,
           vehicleAdmin: true,
           excludeUserId: req.user.id,
           excludeEmail: current.requester_email,
+          metadata,
         });
       }
     }
@@ -1090,23 +1121,24 @@ async function insertRoleNotifications(client, {
   mealAdmin = false,
   excludeUserId = null,
   excludeEmail = null,
+  metadata = {},
 }) {
   await client.query(
-    `INSERT INTO user_notifications (user_id, event_type, related_entity_type, related_entity_id)
-     SELECT id, $1, $2, $3 FROM users
+    `INSERT INTO user_notifications (user_id, event_type, related_entity_type, related_entity_id, metadata)
+     SELECT id, $1, $2, $3, $8::JSONB FROM users
      WHERE is_active = TRUE
        AND (($4::BOOLEAN AND vehicle_admin = TRUE) OR ($5::BOOLEAN AND meal_admin = TRUE))
        AND ($6::BIGINT IS NULL OR id <> $6)
        AND ($7::TEXT IS NULL OR LOWER(email) <> LOWER($7))`,
-    [eventType, relatedEntityType, relatedEntityId, vehicleAdmin, mealAdmin, excludeUserId, excludeEmail],
+    [eventType, relatedEntityType, relatedEntityId, vehicleAdmin, mealAdmin, excludeUserId, excludeEmail, JSON.stringify(metadata)],
   );
 }
 
-async function insertUserNotification(client, email, eventType, relatedEntityType, relatedEntityId) {
+async function insertUserNotification(client, email, eventType, relatedEntityType, relatedEntityId, metadata = {}) {
   await client.query(
-    `INSERT INTO user_notifications (user_id, event_type, related_entity_type, related_entity_id)
-     SELECT id, $2, $3, $4 FROM users WHERE LOWER(email) = LOWER($1)`,
-    [email, eventType, relatedEntityType, relatedEntityId],
+    `INSERT INTO user_notifications (user_id, event_type, related_entity_type, related_entity_id, metadata)
+     SELECT id, $2, $3, $4, $5::JSONB FROM users WHERE LOWER(email) = LOWER($1)`,
+    [email, eventType, relatedEntityType, relatedEntityId, JSON.stringify(metadata)],
   );
 }
 
