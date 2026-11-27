@@ -157,19 +157,54 @@ app.get('/api/inbox/approvals', async (req, res) => {
 });
 
 app.get('/api/notifications', async (req, res) => {
-  const { rows } = await pool.query(
-    `SELECT id, event_type, related_entity_type, related_entity_id, created_at, read_at,
-            (SELECT COUNT(*)::INTEGER FROM user_notifications
-             WHERE user_id = $1 AND read_at IS NULL) AS unread_count
-     FROM user_notifications
-     WHERE user_id = $1
-     ORDER BY created_at DESC, id DESC
-     LIMIT 100`,
-    [req.user.id],
+  const page = Math.max(1, Math.min(10000, Number.parseInt(String(req.query.page ?? '1'), 10) || 1));
+  const pageSize = Math.max(1, Math.min(100, Number.parseInt(String(req.query.pageSize ?? '10'), 10) || 10));
+  const status = String(req.query.status ?? 'all');
+  const type = String(req.query.type ?? 'all');
+  if (!['all', 'unread', 'read'].includes(status)) throw new HttpError(400, 'Unsupported notification status filter.');
+  if (!['all', 'vehicle', 'meal', 'system'].includes(type)) throw new HttpError(400, 'Unsupported notification type filter.');
+
+  const conditions = ['user_id = $1'];
+  const values = [req.user.id];
+  if (status === 'unread') conditions.push('read_at IS NULL');
+  if (status === 'read') conditions.push('read_at IS NOT NULL');
+  if (type === 'vehicle') {
+    values.push('vehicle_request');
+    conditions.push(`related_entity_type = $${values.length}`);
+  } else if (type === 'meal') {
+    values.push('meal_request');
+    conditions.push(`related_entity_type = $${values.length}`);
+  } else if (type === 'system') {
+    conditions.push("event_type IN ('password_changed', 'password_reset')");
+  }
+  const where = conditions.join(' AND ');
+  const countResult = await pool.query(
+    `SELECT COUNT(*)::INTEGER AS total FROM user_notifications WHERE ${where}`,
+    values,
   );
+  const total = countResult.rows[0]?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const offset = (currentPage - 1) * pageSize;
+  values.push(pageSize, offset);
+  const [unreadResult, rowsResult] = await Promise.all([
+    pool.query('SELECT COUNT(*)::INTEGER AS unread_count FROM user_notifications WHERE user_id = $1 AND read_at IS NULL', [req.user.id]),
+    pool.query(
+      `SELECT id, event_type, related_entity_type, related_entity_id, created_at, read_at
+       FROM user_notifications
+       WHERE ${where}
+       ORDER BY created_at DESC, id DESC
+       LIMIT $${values.length - 1} OFFSET $${values.length}`,
+      values,
+    ),
+  ]);
   res.json({
-    items: rows.map(mapUserNotification),
-    unreadCount: Number(rows[0]?.unread_count ?? 0),
+    items: rowsResult.rows.map(mapUserNotification),
+    unreadCount: Number(unreadResult.rows[0]?.unread_count ?? 0),
+    page: currentPage,
+    pageSize,
+    total,
+    totalPages,
   });
 });
 
@@ -193,6 +228,42 @@ app.patch('/api/notifications/:id/read', async (req, res) => {
   );
   if (!rows[0]) throw new HttpError(404, 'Notification was not found.');
   res.json({ id: Number(rows[0].id), readAt: rows[0].read_at });
+});
+
+app.delete('/api/notifications/:id', async (req, res) => {
+  const id = parseId(req.params.id);
+  const { rows } = await pool.query(
+    'DELETE FROM user_notifications WHERE id = $1 AND user_id = $2 RETURNING id',
+    [id, req.user.id],
+  );
+  if (!rows[0]) throw new HttpError(404, 'Notification was not found.');
+  res.json({ deleted: 1 });
+});
+
+app.post('/api/notifications/read-selected', async (req, res) => {
+  const ids = Array.isArray(req.body?.ids)
+    ? req.body.ids.map((id) => Number(id)).filter((id) => Number.isSafeInteger(id) && id > 0)
+    : [];
+  if (ids.length === 0) throw new HttpError(400, 'Select at least one notification.');
+  const { rows } = await pool.query(
+    `UPDATE user_notifications SET read_at = COALESCE(read_at, NOW())
+     WHERE user_id = $1 AND id = ANY($2::BIGINT[]) AND read_at IS NULL
+     RETURNING id`,
+    [req.user.id, ids],
+  );
+  res.json({ updated: rows.length });
+});
+
+app.post('/api/notifications/delete-selected', async (req, res) => {
+  const ids = Array.isArray(req.body?.ids)
+    ? req.body.ids.map((id) => Number(id)).filter((id) => Number.isSafeInteger(id) && id > 0)
+    : [];
+  if (ids.length === 0) throw new HttpError(400, 'Select at least one notification.');
+  const { rows } = await pool.query(
+    'DELETE FROM user_notifications WHERE user_id = $1 AND id = ANY($2::BIGINT[]) RETURNING id',
+    [req.user.id, ids],
+  );
+  res.json({ deleted: rows.length });
 });
 
 app.get('/api/profile', async (req, res) => {

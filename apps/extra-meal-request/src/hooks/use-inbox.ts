@@ -21,7 +21,22 @@ export type UserNotification = {
   readAt?: string;
 };
 
-type NotificationsResponse = { items: UserNotification[]; unreadCount: number };
+export type NotificationStatusFilter = 'all' | 'unread' | 'read';
+export type NotificationTypeFilter = 'all' | 'vehicle' | 'meal' | 'system';
+type NotificationsResponse = {
+  items: UserNotification[];
+  unreadCount: number;
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+};
+type NotificationsParams = {
+  page?: number;
+  pageSize?: number;
+  status?: NotificationStatusFilter;
+  type?: NotificationTypeFilter;
+};
 
 const approvalsKey = ['inbox-approvals'] as const;
 const notificationsKey = ['user-notifications'] as const;
@@ -77,10 +92,20 @@ export function useInboxApprovals(enabled = true) {
   });
 }
 
-export function useUserNotifications() {
+export function useUserNotifications(params: NotificationsParams = {}) {
+  const page = params.page ?? 1;
+  const pageSize = params.pageSize ?? 10;
+  const status = params.status ?? 'all';
+  const type = params.type ?? 'all';
+  const queryParams = new URLSearchParams({
+    page: String(page),
+    pageSize: String(pageSize),
+    status,
+    type,
+  });
   return useQuery({
-    queryKey: notificationsKey,
-    queryFn: () => apiRequest<NotificationsResponse>('/notifications'),
+    queryKey: [...notificationsKey, page, pageSize, status, type],
+    queryFn: () => apiRequest<NotificationsResponse>(`/notifications?${queryParams.toString()}`),
     staleTime: 15_000,
     refetchInterval: () => document.visibilityState === 'visible' ? 30_000 : false,
     refetchIntervalInBackground: false,
@@ -124,23 +149,21 @@ export function useMarkNotificationRead() {
     mutationFn: (id: number) => apiRequest(`/notifications/${id}/read`, { method: 'PATCH' }),
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: notificationsKey });
-      const previousData = queryClient.getQueryData<NotificationsResponse>(notificationsKey);
-      const notification = previousData?.items.find((item) => item.id === id);
-
-      if (previousData && notification && !notification.readAt) {
-        queryClient.setQueryData<NotificationsResponse>(notificationsKey, {
+      const previousQueries = queryClient.getQueriesData<NotificationsResponse>({ queryKey: notificationsKey });
+      queryClient.setQueriesData<NotificationsResponse>({ queryKey: notificationsKey }, (previousData) => {
+        if (!previousData) return previousData;
+        const notification = previousData.items.find((item) => item.id === id);
+        if (!notification || notification.readAt) return previousData;
+        return {
           ...previousData,
           items: previousData.items.map((item) => item.id === id ? { ...item, readAt: new Date().toISOString() } : item),
           unreadCount: Math.max(0, previousData.unreadCount - 1),
-        });
-      }
-
-      return { previousData };
+        };
+      });
+      return { previousQueries };
     },
     onError: (_error, _id, context) => {
-      if (context?.previousData) {
-        queryClient.setQueryData(notificationsKey, context.previousData);
-      }
+      context?.previousQueries.forEach(([queryKey, data]) => queryClient.setQueryData(queryKey, data));
     },
     onSettled: () => void queryClient.invalidateQueries({ queryKey: notificationsKey }),
   });
@@ -151,5 +174,35 @@ export function useMarkAllNotificationsRead() {
   return useMutation({
     mutationFn: () => apiRequest('/notifications/read-all', { method: 'POST' }),
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: notificationsKey }),
+  });
+}
+
+export function useMarkSelectedNotificationsRead() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (ids: number[]) => apiRequest('/notifications/read-selected', {
+      method: 'POST',
+      body: JSON.stringify({ ids }),
+    }),
+    onSettled: () => void queryClient.invalidateQueries({ queryKey: notificationsKey }),
+  });
+}
+
+export function useDeleteNotification() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => apiRequest(`/notifications/${id}`, { method: 'DELETE' }),
+    onSettled: () => void queryClient.invalidateQueries({ queryKey: notificationsKey }),
+  });
+}
+
+export function useDeleteSelectedNotifications() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (ids: number[]) => apiRequest('/notifications/delete-selected', {
+      method: 'POST',
+      body: JSON.stringify({ ids }),
+    }),
+    onSettled: () => void queryClient.invalidateQueries({ queryKey: notificationsKey }),
   });
 }

@@ -29,7 +29,7 @@ export function InboxNotificationBell() {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const { data, isPending, isError } = useUserNotifications();
+  const { data, isPending, isError } = useUserNotifications({ status: 'unread', pageSize: 8 });
   const markRead = useMarkNotificationRead();
   const notifications = (data?.items ?? []).filter((notification) => !notification.readAt);
   const unreadCount = data?.unreadCount ?? 0;

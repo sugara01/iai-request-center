@@ -101,6 +101,8 @@ CREATE INDEX IF NOT EXISTS user_notifications_user_created_idx
 CREATE INDEX IF NOT EXISTS user_notifications_user_unread_idx
   ON user_notifications (user_id)
   WHERE read_at IS NULL;
+CREATE INDEX IF NOT EXISTS user_notifications_user_type_created_idx
+  ON user_notifications (user_id, related_entity_type, created_at DESC, id DESC);
 
 CREATE TABLE IF NOT EXISTS vehicle_requests (
   id BIGSERIAL PRIMARY KEY,
