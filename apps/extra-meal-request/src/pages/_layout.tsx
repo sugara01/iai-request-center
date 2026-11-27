@@ -1,9 +1,10 @@
-import { useState } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
-import { Bell, BookOpenCheck, CarFront, Check, ChevronDown, ClipboardList, Gauge, Inbox as InboxIcon, KeyRound, Languages, LogOut, Presentation, SquarePen, UserRound, Users, Workflow } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { Bell, BookOpenCheck, CarFront, Check, ChevronDown, ChevronRight, ClipboardList, Gauge, Inbox as InboxIcon, KeyRound, Languages, LogOut, Presentation, SquarePen, UserRound, Users, Workflow } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -35,6 +36,32 @@ const requesterLinks = [
   { to: '/panduan-requester', label: 'Panduan Requester', icon: BookOpenCheck },
 ];
 
+type SidebarSectionState = {
+  requester: boolean;
+  inbox: boolean;
+  administration: boolean;
+};
+
+const SIDEBAR_SECTION_STATE_KEY = 'iai-request-center-sidebar-sections';
+const defaultSidebarSectionState: SidebarSectionState = {
+  requester: true,
+  inbox: true,
+  administration: true,
+};
+
+function loadSidebarSectionState(): SidebarSectionState {
+  try {
+    const saved = JSON.parse(localStorage.getItem(SIDEBAR_SECTION_STATE_KEY) ?? 'null') as Partial<SidebarSectionState> | null;
+    return {
+      requester: typeof saved?.requester === 'boolean' ? saved.requester : true,
+      inbox: typeof saved?.inbox === 'boolean' ? saved.inbox : true,
+      administration: typeof saved?.administration === 'boolean' ? saved.administration : true,
+    };
+  } catch {
+    return defaultSidebarSectionState;
+  }
+}
+
 type DemoViewRole = 'User' | 'Approver' | 'Vehicle Admin' | 'Meal Admin';
 
 const demoViewRoles: DemoViewRole[] = ['User', 'Approver', 'Vehicle Admin', 'Meal Admin'];
@@ -56,7 +83,9 @@ export default function Layout() {
   const { data: user, isPending: isUserPending } = useUser();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const location = useLocation();
   const [demoRole, setDemoRole] = useState<DemoViewRole | null>(null);
+  const [sidebarSectionState, setSidebarSectionState] = useState<SidebarSectionState>(loadSidebarSectionState);
   const email = user?.userPrincipalName;
   const { isVehicleAdmin, isMealAdmin, isITAdmin, isSuperAdmin, isPending: isAccessPending } = useAdminAuthorization(email);
   const notificationCounts = useAdminNotificationCounts(isVehicleAdmin, isMealAdmin);
@@ -76,6 +105,32 @@ export default function Layout() {
     { to: '/inbox/notifications', label: t('Notifications'), icon: Bell, count: notifications?.unreadCount ?? 0 },
   ];
   const localizedRequesterLinks = requesterLinks.map((link: typeof requesterLinks[number]) => ({ ...link, label: t(link.label) }));
+  useEffect(() => {
+    localStorage.setItem(SIDEBAR_SECTION_STATE_KEY, JSON.stringify(sidebarSectionState));
+  }, [sidebarSectionState]);
+  useEffect(() => {
+    let section: keyof SidebarSectionState | undefined;
+    if (location.pathname === '/' ||
+      ['/buat-request', '/request-kendaraan', '/request-extra-meal', '/panduan-requester'].includes(location.pathname) ||
+      location.pathname.startsWith('/request/')) {
+      section = 'requester';
+    } else if (location.pathname.startsWith('/inbox/')) {
+      section = 'inbox';
+    } else if (
+      location.pathname.startsWith('/admin-kendaraan') ||
+      location.pathname.startsWith('/admin-meal') ||
+      location.pathname.startsWith('/panduan-power-automate') ||
+      location.pathname.startsWith('/kelola-pengguna')
+    ) {
+      section = 'administration';
+    }
+    if (section) {
+      setSidebarSectionState((current) => current[section!] ? current : { ...current, [section!]: true });
+    }
+  }, [location.pathname]);
+  const toggleSidebarSection = (section: keyof SidebarSectionState) => {
+    setSidebarSectionState((current) => ({ ...current, [section]: !current[section] }));
+  };
   const logout = async () => {
     try {
       await apiRequest('/auth/logout', { method: 'POST' });
@@ -99,24 +154,68 @@ export default function Layout() {
             </div>
           </SidebarHeader>
           <SidebarContent>
-            <SidebarGroup>
-              <SidebarGroupLabel>{t('Requester')}</SidebarGroupLabel>
-              <SidebarGroupContent><SidebarMenu>{renderLinks(localizedRequesterLinks)}</SidebarMenu></SidebarGroupContent>
-            </SidebarGroup>
-            <SidebarGroup>
-              <SidebarGroupLabel>{t('Inbox')}</SidebarGroupLabel>
-              <SidebarGroupContent><SidebarMenu>{renderLinks(inboxLinks)}</SidebarMenu></SidebarGroupContent>
-            </SidebarGroup>
-            {isUserPending || isAccessPending ? (
-              <SidebarGroup aria-label={t('Memuat akses administrasi')}>
-                <SidebarGroupLabel>{t('Administration')}</SidebarGroupLabel>
-                <SidebarGroupContent><div className="space-y-2 px-2" aria-hidden="true"><div className="h-8 animate-pulse rounded-md bg-sidebar-accent" /><div className="h-8 animate-pulse rounded-md bg-sidebar-accent" /></div></SidebarGroupContent>
-              </SidebarGroup>
-            ) : adminLinks.length > 0 && (
+            <Collapsible open={sidebarSectionState.requester} onOpenChange={() => toggleSidebarSection('requester')}>
               <SidebarGroup>
-                <SidebarGroupLabel>{t('Administration')}</SidebarGroupLabel>
-                <SidebarGroupContent><SidebarMenu>{renderLinks(adminLinks)}</SidebarMenu></SidebarGroupContent>
+                <CollapsibleTrigger asChild>
+                  <SidebarGroupLabel asChild>
+                    <button type="button" className="flex w-full cursor-pointer items-center justify-between rounded-md pr-2 hover:text-sidebar-accent-foreground" aria-expanded={sidebarSectionState.requester}>
+                      <span>{t('Requester')}</span>
+                      {sidebarSectionState.requester ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
+                    </button>
+                  </SidebarGroupLabel>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarGroupContent><SidebarMenu>{renderLinks(localizedRequesterLinks)}</SidebarMenu></SidebarGroupContent>
+                </CollapsibleContent>
               </SidebarGroup>
+            </Collapsible>
+            <Collapsible open={sidebarSectionState.inbox} onOpenChange={() => toggleSidebarSection('inbox')}>
+              <SidebarGroup>
+                <CollapsibleTrigger asChild>
+                  <SidebarGroupLabel asChild>
+                    <button type="button" className="flex w-full cursor-pointer items-center justify-between rounded-md pr-2 hover:text-sidebar-accent-foreground" aria-expanded={sidebarSectionState.inbox}>
+                      <span>{t('Inbox')}</span>
+                      {sidebarSectionState.inbox ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
+                    </button>
+                  </SidebarGroupLabel>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarGroupContent><SidebarMenu>{renderLinks(inboxLinks)}</SidebarMenu></SidebarGroupContent>
+                </CollapsibleContent>
+              </SidebarGroup>
+            </Collapsible>
+            {isUserPending || isAccessPending ? (
+              <Collapsible open={sidebarSectionState.administration} onOpenChange={() => toggleSidebarSection('administration')}>
+                <SidebarGroup aria-label={t('Memuat akses administrasi')}>
+                  <CollapsibleTrigger asChild>
+                    <SidebarGroupLabel asChild>
+                      <button type="button" className="flex w-full cursor-pointer items-center justify-between rounded-md pr-2 hover:text-sidebar-accent-foreground" aria-expanded={sidebarSectionState.administration}>
+                        <span>{t('Administration')}</span>
+                        {sidebarSectionState.administration ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
+                      </button>
+                    </SidebarGroupLabel>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <SidebarGroupContent><div className="space-y-2 px-2" aria-hidden="true"><div className="h-8 animate-pulse rounded-md bg-sidebar-accent" /><div className="h-8 animate-pulse rounded-md bg-sidebar-accent" /></div></SidebarGroupContent>
+                  </CollapsibleContent>
+                </SidebarGroup>
+              </Collapsible>
+            ) : adminLinks.length > 0 && (
+              <Collapsible open={sidebarSectionState.administration} onOpenChange={() => toggleSidebarSection('administration')}>
+                <SidebarGroup>
+                  <CollapsibleTrigger asChild>
+                    <SidebarGroupLabel asChild>
+                      <button type="button" className="flex w-full cursor-pointer items-center justify-between rounded-md pr-2 hover:text-sidebar-accent-foreground" aria-expanded={sidebarSectionState.administration}>
+                        <span>{t('Administration')}</span>
+                        {sidebarSectionState.administration ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
+                      </button>
+                    </SidebarGroupLabel>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <SidebarGroupContent><SidebarMenu>{renderLinks(adminLinks)}</SidebarMenu></SidebarGroupContent>
+                  </CollapsibleContent>
+                </SidebarGroup>
+              </Collapsible>
             )}
             <div className="mx-3 mt-auto mb-4 rounded-lg bg-sidebar-accent p-3 text-left text-sidebar-foreground">
               <p className="text-xs font-medium">Database</p>

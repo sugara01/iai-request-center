@@ -179,43 +179,26 @@ VALUES
   ('sri.aditia.demo@local.test', TRUE, TRUE, FALSE)
 ON CONFLICT (email) DO NOTHING;
 
-INSERT INTO vehicle_requests (
-  request_number, requester_name, requester_email, department_key, pickup_date,
-  pickup_time, pickup_point, destination_key, purpose, passenger_count,
-  current_status_key, created_at, last_update
-)
-VALUES (
-  'RQ2611250001', 'Ayu Lestari', 'ayu.lestari@example.com', 'Commercial',
-  CURRENT_DATE + 2, '08:00', 'INEOS Plant', 'JakartaMerak',
-  'Customer visit (demo)', 2, 'Submitted', NOW() - INTERVAL '2 hours', NOW() - INTERVAL '2 hours'
-)
-ON CONFLICT (request_number) DO NOTHING;
+DELETE FROM user_notifications
+WHERE related_entity_type = 'vehicle_request'
+  AND related_entity_id IN ('RQ2611250001', 'RQ2611240002');
 
-INSERT INTO vehicle_requests (
-  request_number, requester_name, requester_email, department_key, pickup_date,
-  pickup_time, pickup_point, destination_key, purpose, passenger_count,
-  current_status_key, admin_decision_key, admin_note, created_at, last_update
-)
-VALUES (
-  'RQ2611240002', 'Ayu Lestari', 'ayu.lestari@example.com', 'Commercial',
-  CURRENT_DATE + 5, '09:30', 'INEOS Plant', 'MerakJakartaHO',
-  'Office meeting (demo)', 1, 'PendingPlantDirectorApproval', 'Available',
-  'Vehicle is available (demo)', NOW() - INTERVAL '1 day', NOW() - INTERVAL '1 day'
-)
-ON CONFLICT (request_number) DO NOTHING;
+DELETE FROM user_notifications
+WHERE related_entity_type = 'meal_request'
+  AND related_entity_id = 'EMR-261125-01';
 
-INSERT INTO meal_requests (
-  request_id, record_id, service_date, requester_name, requester_email,
-  department, purpose, start_date, end_date, meal_category, quantity,
-  additional, current_status, approval_trigger, created_at
-)
-VALUES
-  ('EMR-261125-01', 'EMR-261125-01-20261126', CURRENT_DATE + 1,
-   'Ayu Lestari', 'ayu.lestari@example.com', 'Commercial', 'Customer workshop (demo)',
-   CURRENT_DATE + 1, CURRENT_DATE + 2, 'Lunch', 8, 'Sample request for local testing',
-   'Submitted', TRUE, NOW() - INTERVAL '3 hours'),
-  ('EMR-261125-01', 'EMR-261125-01-20261127', CURRENT_DATE + 2,
-   'Ayu Lestari', 'ayu.lestari@example.com', 'Commercial', 'Customer workshop (demo)',
-   CURRENT_DATE + 1, CURRENT_DATE + 2, 'Lunch', 8, 'Sample request for local testing',
-   'Submitted', FALSE, NOW() - INTERVAL '3 hours')
-ON CONFLICT (record_id) DO NOTHING;
+DELETE FROM audit_log
+WHERE entity_type = 'vehicle_request'
+  AND entity_id IN ('RQ2611250001', 'RQ2611240002');
+
+DELETE FROM audit_log
+WHERE entity_type = 'meal_request'
+  AND entity_id = 'EMR-261125-01';
+
+DELETE FROM meal_requests
+WHERE request_id = 'EMR-261125-01'
+  AND requester_email = 'ayu.lestari@example.com';
+
+DELETE FROM vehicle_requests
+WHERE request_number IN ('RQ2611250001', 'RQ2611240002')
+  AND requester_email = 'ayu.lestari@example.com';

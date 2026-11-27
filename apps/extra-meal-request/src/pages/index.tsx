@@ -55,7 +55,7 @@ export default function HomePage() {
   const [pageSize, setPageSize] = useState(10);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [requestScope, setRequestScope] = useState<RequestScope>('mine');
-  const email = user?.userPrincipalName ?? 'ayu.lestari@example.com';
+  const email = user?.userPrincipalName ?? '';
   const isAdmin = Boolean(user?.isVehicleAdmin || user?.isMealAdmin || user?.isSuperAdmin);
   const myMeals = mealRequests.filter((request: MealRequest) => request.requesterEmail.toLowerCase() === email.toLowerCase());
   const myVehicles = vehicleRequests.filter((request: RequestKendaraan) => request.emailPemohon?.toLowerCase() === email.toLowerCase());

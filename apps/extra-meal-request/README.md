@@ -12,7 +12,7 @@ Prerequisites: Docker Desktop, Node.js 20 or newer, and npm.
    docker compose up -d postgres
    ```
 
-   Docker initializes the schema and fictional demo records on the first database start. PostgreSQL data persists in the `iai-postgres-data` volume.
+   Docker initializes the schema on the first database start. PostgreSQL data persists in the `iai-postgres-data` volume.
 
 2. Install the API dependencies:
 
